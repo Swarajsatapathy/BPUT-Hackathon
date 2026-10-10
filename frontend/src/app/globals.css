@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #0f172a;
+  --background: #f1f5f9;
+  --maya-blue: #5cb4ee;
+}
+
+body {
+  color: var(--foreground);
+  background-color: #f1f5f9;
+  background-image: 
+    radial-gradient(at 15% 10%, rgba(92, 180, 238, 0.12) 0px, transparent 40%),
+    radial-gradient(at 85% 90%, rgba(56, 154, 216, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.6) 0px, transparent 100%);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Polished clinical form controls */
+input, select, textarea {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #5cb4ee !important;
+  box-shadow: 0 0 0 3px rgba(92, 180, 238, 0.28) !important;
+  outline: none !important;
+}
+
+/* Clean clinical scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Eye-catching Maya Blue Button Utility */
+.btn-maya-primary {
+  background: linear-gradient(135deg, #5cb4ee 0%, #389ad8 100%);
+  color: #081624;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(92, 180, 238, 0.32);
+  transition: all 0.15s ease-in-out;
+}
+.btn-maya-primary:hover {
+  background: linear-gradient(135deg, #4eaae8 0%, #2888c6 100%);
+  box-shadow: 0 4px 14px rgba(92, 180, 238, 0.45);
+  transform: translateY(-1px);
+}
+.btn-maya-primary:active {
+  transform: translateY(0);
+}
+
+/* Card hover elevations */
+.card-elevation {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-elevation:hover {
+  border-color: rgba(92, 180, 238, 0.45);
+  box-shadow: 0 8px 24px -4px rgba(92, 180, 238, 0.14), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+}
