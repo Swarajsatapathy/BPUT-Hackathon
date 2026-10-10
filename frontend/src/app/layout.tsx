@@ -4,7 +4,7 @@ import { AuthProvider } from "../context/AuthContext";
 import { LanguageProvider } from "../context/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "National Healthcare Triage Assistant | Ministry of Health & Family Welfare",
+  title: "Swasthya Sakhi | AI-Powered Multimodal Healthcare Triage Assistant",
   description: "AI-Powered Multimodal Clinical Triage Assistant for Government and Institutional Health Facilities in India.",
 };
 

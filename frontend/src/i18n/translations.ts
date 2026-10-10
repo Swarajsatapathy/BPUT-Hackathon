@@ -26,7 +26,7 @@ export const UI_TRANSLATIONS: Record<string, Record<string, string>> = {
     ministryBanner: "Ministry of Health & Family Welfare • Government of India",
     abdmProtocol: "ABDM Certified Protocol",
     humanInLoop: "Human-in-the-Loop Triage",
-    appTitle: "National Healthcare Triage Assistant",
+    appTitle: "Swasthya Sakhi",
     appSubTitle: "AI-Powered Multimodal Clinical Triage Support for Government & Institutional Facilities",
     portalSelectPatient: "Citizen / Patient Portal",
     portalSelectHealthcare: "Healthcare Worker / Doctor Desk",

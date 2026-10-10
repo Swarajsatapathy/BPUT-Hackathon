@@ -28,7 +28,7 @@ export const Hero: React.FC<{
           </h1>
 
           <p className="max-w-xl text-pretty text-base sm:text-lg leading-relaxed text-slate-600">
-            Sahayak turns spoken symptoms, typed notes, lab reports and photos into a structured triage note in the
+            Swasthya Sakhi turns spoken symptoms, typed notes, lab reports and photos into a structured triage note in the
             patient&apos;s language — so health workers, nurses and medical officers can review crowded queues with
             confidence.
           </p>
@@ -78,24 +78,24 @@ export const Hero: React.FC<{
             />
           </div>
 
-          {/* Floating Urgent Demo Card */}
-          <div className="mt-4 w-full rounded-xl border border-slate-200/90 bg-white/95 backdrop-blur-xs p-4 shadow-xl lg:absolute lg:-bottom-6 lg:-left-8 lg:mt-0 lg:max-w-sm">
+          {/* Floating Urgent Demo Card (Exact Match to User Reference Photo) */}
+          <div className="mt-4 w-full rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xl lg:absolute lg:-bottom-6 lg:-left-10 lg:mt-0 lg:max-w-md">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs font-semibold text-slate-500">OPD-0142 • 58 M • Hindi</span>
+              <span className="font-mono text-xs text-slate-500 font-medium">OPD-0142 • 58 M • Hindi</span>
               <RiskBadge level="urgent" />
             </div>
-            <p className="mt-2 text-sm font-bold leading-snug text-slate-900">
+            <p className="mt-2.5 text-base font-bold leading-snug text-slate-900">
               Chest heaviness radiating to left arm, ~2 hrs
             </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-3.5 flex flex-wrap gap-2">
               <SourceTag kind="voice" />
               <SourceTag kind="ocr" />
               <SourceTag kind="worker" />
             </div>
-            <p className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500 flex items-center justify-between">
-              <span>Awaiting medical officer review</span>
+            <div className="mt-4 border-t border-slate-100 pt-3 text-xs flex items-center justify-between">
+              <span className="text-slate-500 font-normal">Awaiting medical officer review</span>
               <span className="font-semibold text-teal-700">3 follow-ups</span>
-            </p>
+            </div>
           </div>
         </div>
       </div>

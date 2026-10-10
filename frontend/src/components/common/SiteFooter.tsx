@@ -9,7 +9,7 @@ export const SiteFooter: React.FC = () => {
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 md:flex-row md:items-center md:justify-between md:px-6">
         <div className="space-y-1">
           <p className="font-medium text-slate-700">
-            Sahayak Triage — Multimodal Decision-Support Platform
+            Swasthya Sakhi — Multimodal Clinical Decision-Support Platform
           </p>
           <p className="text-xs text-slate-400">
             For PHCs, CHCs, district hospitals, campus and industrial health units. Verified by clinicians.

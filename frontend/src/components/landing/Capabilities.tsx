@@ -47,7 +47,7 @@ export const Capabilities: React.FC = () => {
               Works with whatever the patient brings.
             </h2>
             <p className="mt-4 text-pretty text-sm sm:text-base leading-relaxed text-slate-600">
-              A crumpled lab printout, a voice note in Odia or Hindi, a photo from a family member&apos;s phone. Sahayak
+              A crumpled lab printout, a voice note in Odia or Hindi, a photo from a family member&apos;s phone. Swasthya Sakhi
               synthesizes it into one clear note that a clinician can review in under a minute.
             </p>
           </div>

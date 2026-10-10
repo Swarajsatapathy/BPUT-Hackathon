@@ -68,10 +68,10 @@ export const Header: React.FC = () => {
           </span>
           <span className="flex flex-col leading-tight">
             <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-teal-800 transition-colors">
-              Sahayak Triage
+              Swasthya Sakhi
             </span>
             <span className="text-xs text-slate-500 font-medium">
-              सहायक • Human-in-the-loop
+              स्वास्थ्य सखी • Human-in-the-loop
             </span>
           </span>
         </button>

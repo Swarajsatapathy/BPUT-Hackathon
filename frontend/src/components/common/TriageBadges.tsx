@@ -20,9 +20,9 @@ const riskMeta = {
 };
 
 const riskStyles = {
-  urgent: "bg-red-50 text-red-700 border-red-200/80",
-  priority: "bg-amber-50 text-amber-800 border-amber-200/80",
-  routine: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+  urgent: "bg-rose-50 text-rose-700 border-rose-200/90",
+  priority: "bg-amber-50 text-amber-800 border-amber-200/90",
+  routine: "bg-emerald-50 text-emerald-800 border-emerald-200/90",
 };
 
 export const RiskBadge: React.FC<{ level: RiskLevel; size?: "sm" | "md" }> = ({ level, size = "sm" }) => {
@@ -31,7 +31,7 @@ export const RiskBadge: React.FC<{ level: RiskLevel; size?: "sm" | "md" }> = ({ 
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border font-semibold ${
-        size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm"
+        size === "sm" ? "px-2.5 py-0.5 text-xs" : "px-3 py-1 text-sm"
       } ${riskStyles[norm]}`}
     >
       <Icon className={size === "sm" ? "w-3 h-3" : "w-4 h-4"} aria-hidden="true" />
@@ -75,8 +75,8 @@ export const SourceIcon: React.FC<{ kind: SourceKind; className?: string }> = ({
 
 export const SourceTag: React.FC<{ kind: SourceKind }> = ({ kind }) => {
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-600">
-      <SourceIcon kind={kind} className="w-3 h-3 text-slate-500" />
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-white px-2.5 py-1 text-xs text-slate-700 font-normal shadow-2xs">
+      <SourceIcon kind={kind} className="w-3.5 h-3.5 text-slate-500" />
       {sourceLabels[kind] || kind}
     </span>
   );
