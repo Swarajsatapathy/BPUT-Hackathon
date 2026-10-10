@@ -31,29 +31,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
-      {/* Top Protocol Strip */}
-      <div className="bg-slate-900 px-4 py-1.5 text-[11px] text-slate-300 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          <div className="flex items-center space-x-2.5">
-            <div className="flex items-center space-x-0.5">
-              <span className="inline-block w-2.5 h-2 bg-[#ff9933] rounded-xs" />
-              <span className="inline-block w-2.5 h-2 bg-white rounded-xs" />
-              <span className="inline-block w-2.5 h-2 bg-[#138808] rounded-xs" />
-            </div>
-            <span className="font-semibold text-slate-200 tracking-wide">
-              {t("ministryBanner")}
-            </span>
-          </div>
-          <div className="hidden sm:flex items-center space-x-3 text-[11px] text-slate-400">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-teal-400" />
-              {t("abdmProtocol")}
-            </span>
-            <span className="text-slate-600">|</span>
-            <span>{t("humanInLoop")}</span>
-          </div>
-        </div>
-      </div>
+
 
       {/* Main Navigation Row */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
