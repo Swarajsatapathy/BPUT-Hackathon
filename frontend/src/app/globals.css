@@ -67,6 +67,23 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(0);
 }
 
+/* Deep Clinical Teal Button Utility */
+.btn-clinical-primary {
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 118, 110, 0.2);
+  transition: all 0.15s ease-in-out;
+}
+.btn-clinical-primary:hover {
+  background: #0d9488;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+  transform: translateY(-1px);
+}
+.btn-clinical-primary:active {
+  transform: translateY(0);
+}
+
 /* Card hover elevations */
 .card-elevation {
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { FacilityType, Patient, StaffMember } from "../types";
 
-export type PortalMode = "PATIENT" | "STAFF";
+export type PortalMode = "OVERVIEW" | "PATIENT" | "STAFF";
 
 interface AuthContextType {
   portalMode: PortalMode;
@@ -29,7 +29,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [portalMode, setPortalMode] = useState<PortalMode>("PATIENT");
+  const [portalMode, setPortalMode] = useState<PortalMode>("OVERVIEW");
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [currentStaff, setCurrentStaff] = useState<StaffMember | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<FacilityType>("ALL");
@@ -39,9 +39,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Restore session if available
     try {
       let restoredStaff: StaffMember | null = null;
+      let restoredPatient: Patient | null = null;
       const savedPatient = localStorage.getItem("triage_patient_session");
       if (savedPatient) {
-        setCurrentPatient(JSON.parse(savedPatient));
+        restoredPatient = JSON.parse(savedPatient);
+        setCurrentPatient(restoredPatient);
       }
       const savedStaff = localStorage.getItem("triage_staff_session");
       if (savedStaff) {
@@ -52,12 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (savedFacility) {
         setSelectedFacility(savedFacility);
       }
-      const savedMode = localStorage.getItem("triage_portal_mode");
+      const savedMode = localStorage.getItem("triage_portal_mode") as PortalMode | null;
       // Only permit STAFF mode if an authenticated staff session is actively restored
       if (savedMode === "STAFF" && restoredStaff) {
         setPortalMode("STAFF");
-      } else {
+      } else if (savedMode === "PATIENT" && restoredPatient) {
         setPortalMode("PATIENT");
+      } else if (savedMode === "OVERVIEW" || savedMode === "PATIENT") {
+        setPortalMode(savedMode);
+      } else {
+        setPortalMode("OVERVIEW");
       }
     } catch (e) {
       console.warn("Session restore error", e);

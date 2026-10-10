@@ -3,42 +3,42 @@
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
-import { 
-  Building2, 
-  Globe, 
-  LogOut, 
-  Stethoscope, 
-  User, 
+import {
+  Globe,
+  LogOut,
+  Stethoscope,
   ShieldCheck,
-  Activity,
-  Lock
+  Lock,
+  User,
+  LayoutDashboard,
+  ClipboardPenLine,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
-  const { 
-    portalMode, 
-    setPortalMode, 
-    currentPatient, 
-    isPatientLoggedIn, 
-    logoutPatient, 
-    currentStaff, 
-    isStaffLoggedIn, 
+  const {
+    portalMode,
+    setPortalMode,
+    currentPatient,
+    isPatientLoggedIn,
+    logoutPatient,
+    currentStaff,
+    isStaffLoggedIn,
     logoutStaff,
-    setShowStaffAuthModal
+    setShowStaffAuthModal,
   } = useAuth();
-  
+
   const { currentLanguage, setLanguageCode, allLanguages, t } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-40 shadow-sm">
-      {/* Top Official Banner */}
-      <div className="bg-[#091424] px-4 py-1.5 text-[11px] text-slate-300 flex justify-between items-center border-b border-slate-800">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-2xs">
+      {/* Top Protocol Strip */}
+      <div className="bg-slate-900 px-4 py-1.5 text-[11px] text-slate-300 border-b border-slate-800">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <div className="flex items-center space-x-2.5">
             <div className="flex items-center space-x-0.5">
-              <span className="inline-block w-2.5 h-2 bg-[#ff9933] rounded-xs"></span>
-              <span className="inline-block w-2.5 h-2 bg-white rounded-xs"></span>
-              <span className="inline-block w-2.5 h-2 bg-[#138808] rounded-xs"></span>
+              <span className="inline-block w-2.5 h-2 bg-[#ff9933] rounded-xs" />
+              <span className="inline-block w-2.5 h-2 bg-white rounded-xs" />
+              <span className="inline-block w-2.5 h-2 bg-[#138808] rounded-xs" />
             </div>
             <span className="font-semibold text-slate-200 tracking-wide">
               {t("ministryBanner")}
@@ -46,7 +46,7 @@ export const Header: React.FC = () => {
           </div>
           <div className="hidden sm:flex items-center space-x-3 text-[11px] text-slate-400">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-[#5cb4ee]" />
+              <ShieldCheck className="w-3 h-3 text-teal-400" />
               {t("abdmProtocol")}
             </span>
             <span className="text-slate-600">|</span>
@@ -55,116 +55,164 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Header Row */}
-      <div className="bg-[#0e2439] text-white border-b-2 border-[#5cb4ee]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      {/* Main Navigation Row */}
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        
+        {/* Brand / Logo */}
+        <button
+          onClick={() => setPortalMode("OVERVIEW")}
+          className="flex items-center gap-3 text-left cursor-pointer group"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs group-hover:bg-teal-800 transition-colors">
+            <Stethoscope className="w-5 h-5" aria-hidden="true" />
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-teal-800 transition-colors">
+              Sahayak Triage
+            </span>
+            <span className="text-xs text-slate-500 font-medium">
+              सहायक • Human-in-the-loop
+            </span>
+          </span>
+        </button>
+
+        {/* Center Desktop Navigation */}
+        <nav aria-label="Main" className="hidden items-center gap-1.5 md:flex">
+          <button
+            onClick={() => setPortalMode("OVERVIEW")}
+            className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all cursor-pointer ${
+              portalMode === "OVERVIEW"
+                ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            Overview
+          </button>
+
+          <button
+            onClick={() => setPortalMode("PATIENT")}
+            className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              portalMode === "PATIENT"
+                ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            <ClipboardPenLine className="w-4 h-4 text-teal-700" />
+            <span>Patient intake</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (isStaffLoggedIn) {
+                setPortalMode("STAFF");
+              } else {
+                setShowStaffAuthModal(true);
+              }
+            }}
+            className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              portalMode === "STAFF"
+                ? "bg-teal-700 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Reviewer dashboard</span>
+            {!isStaffLoggedIn && (
+              <Lock className="w-3.5 h-3.5 text-amber-500 ml-0.5" />
+            )}
+          </button>
+        </nav>
+
+        {/* Right Actions: Non-diagnostic Pill, Language, User State */}
+        <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* Brand / Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#5cb4ee] to-[#0284c7] shadow-sm flex items-center justify-center text-slate-950 shrink-0 border border-white/20">
-              <Stethoscope className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm sm:text-base font-bold tracking-tight text-white">
-                  {t("appTitle")}
-                </h1>
-                <span className="bg-[#5cb4ee]/20 text-[#5cb4ee] text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-[#5cb4ee]/40">
-                  v1.0
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-300 font-normal hidden sm:block">
-                {t("appSubTitle")}
-              </p>
-            </div>
+          {/* Non-diagnostic Badge */}
+          <div className="hidden lg:flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50/70 px-3 py-1 text-xs font-semibold text-teal-800">
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-600" aria-hidden="true" />
+            <span>Non-diagnostic</span>
           </div>
 
-          {/* Right Navigation Controls */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            
-            {/* Portal Switch Tabs */}
-            <div className="bg-slate-900/90 p-1 rounded-lg border border-slate-700/80 flex shadow-inner">
-              <button
-                onClick={() => setPortalMode("PATIENT")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                  portalMode === "PATIENT"
-                    ? "bg-[#5cb4ee] text-slate-950 shadow-sm"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>{t("portalSelectPatient")}</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (isStaffLoggedIn) {
-                    setPortalMode("STAFF");
-                  } else {
-                    setShowStaffAuthModal(true);
-                  }
-                }}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  portalMode === "STAFF"
-                    ? "bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white shadow-sm"
-                    : "text-slate-300 hover:text-white"
-                }`}
-                title={isStaffLoggedIn ? "Healthcare Worker Console" : "Clinician Authentication Required"}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>{t("portalSelectHealthcare")}</span>
-                {!isStaffLoggedIn && (
-                  <Lock className="w-3 h-3 text-amber-300 ml-0.5" />
-                )}
-              </button>
-            </div>
-
-            {/* Language Selector */}
-            <div className="relative flex items-center">
-              <Globe className="w-3.5 h-3.5 absolute left-2.5 text-[#5cb4ee] pointer-events-none" />
-              <select
-                value={currentLanguage.code}
-                onChange={(e) => setLanguageCode(e.target.value)}
-                className="bg-slate-900 text-white text-xs rounded-lg pl-8 pr-3 py-1.5 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-[#5cb4ee] font-medium cursor-pointer shadow-xs"
-              >
-                {allLanguages.map((lang) => (
-                  <option key={lang.code} value={lang.code} className="bg-slate-900 text-white">
-                    {lang.nativeName} ({lang.name})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* User Session Pill */}
-            {portalMode === "PATIENT" && isPatientLoggedIn && currentPatient && (
-              <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-[#5cb4ee]/40 text-xs shadow-xs">
-                <span className="text-white font-semibold">{currentPatient.fullName}</span>
-                <span className="text-[#5cb4ee] font-mono text-[11px] font-bold">({currentPatient._id})</span>
-                <button
-                  onClick={logoutPatient}
-                  title="Logout"
-                  className="text-slate-400 hover:text-red-400 ml-1 transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
-            {portalMode === "STAFF" && isStaffLoggedIn && currentStaff && (
-              <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-sky-500/40 text-xs shadow-xs">
-                <span className="text-[#5cb4ee] font-bold">{currentStaff.name}</span>
-                <button
-                  onClick={logoutStaff}
-                  title="Logout Staff"
-                  className="text-slate-400 hover:text-red-400 ml-1 transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
+          {/* Language Selector */}
+          <div className="relative flex items-center">
+            <Globe className="w-3.5 h-3.5 absolute left-2.5 text-slate-500 pointer-events-none" />
+            <select
+              value={currentLanguage.code}
+              onChange={(e) => setLanguageCode(e.target.value)}
+              className="bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs rounded-lg pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium cursor-pointer shadow-2xs"
+            >
+              {allLanguages.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.nativeName} ({lang.name})
+                </option>
+              ))}
+            </select>
           </div>
+
+          {/* Patient Session Pill */}
+          {portalMode === "PATIENT" && isPatientLoggedIn && currentPatient && (
+            <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300 text-xs shadow-2xs">
+              <span className="text-slate-900 font-semibold">{currentPatient.fullName}</span>
+              <button
+                onClick={logoutPatient}
+                title="Logout"
+                className="text-slate-400 hover:text-red-500 ml-1 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Staff Session Pill */}
+          {portalMode === "STAFF" && isStaffLoggedIn && currentStaff && (
+            <div className="flex items-center gap-1.5 bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-200 text-xs shadow-2xs">
+              <span className="text-teal-900 font-bold">{currentStaff.name}</span>
+              <button
+                onClick={logoutStaff}
+                title="Logout Staff"
+                className="text-slate-400 hover:text-red-500 ml-1 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* Mobile Navigation Bar */}
+      <nav aria-label="Main mobile" className="flex gap-1 overflow-x-auto border-t border-slate-200 px-4 py-2 md:hidden bg-slate-50">
+        <button
+          onClick={() => setPortalMode("OVERVIEW")}
+          className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold ${
+            portalMode === "OVERVIEW" ? "bg-teal-700 text-white" : "text-slate-600"
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setPortalMode("PATIENT")}
+          className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold ${
+            portalMode === "PATIENT" ? "bg-teal-700 text-white" : "text-slate-600"
+          }`}
+        >
+          Patient intake
+        </button>
+        <button
+          onClick={() => {
+            if (isStaffLoggedIn) {
+              setPortalMode("STAFF");
+            } else {
+              setShowStaffAuthModal(true);
+            }
+          }}
+          className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-1 ${
+            portalMode === "STAFF" ? "bg-teal-700 text-white" : "text-slate-600"
+          }`}
+        >
+          Reviewer dashboard
+          {!isStaffLoggedIn && <Lock className="w-3 h-3 text-amber-500" />}
+        </button>
+      </nav>
     </header>
   );
 };
