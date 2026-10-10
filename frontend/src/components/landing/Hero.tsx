@@ -2,8 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { ArrowRight, LayoutDashboard, Stethoscope, Phone } from "lucide-react";
-import { RiskBadge, SourceTag } from "../common/TriageBadges";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -76,26 +75,6 @@ export const Hero: React.FC<{
               priority
               className="aspect-[4/3] h-auto w-full object-cover lg:aspect-square"
             />
-          </div>
-
-          {/* Floating Urgent Demo Card (Exact Match to User Reference Photo) */}
-          <div className="mt-4 w-full rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xl lg:absolute lg:-bottom-6 lg:-left-10 lg:mt-0 lg:max-w-md">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs text-slate-500 font-medium">OPD-0142 • 58 M • Hindi</span>
-              <RiskBadge level="urgent" />
-            </div>
-            <p className="mt-2.5 text-base font-bold leading-snug text-slate-900">
-              Chest heaviness radiating to left arm, ~2 hrs
-            </p>
-            <div className="mt-3.5 flex flex-wrap gap-2">
-              <SourceTag kind="voice" />
-              <SourceTag kind="ocr" />
-              <SourceTag kind="worker" />
-            </div>
-            <div className="mt-4 border-t border-slate-100 pt-3 text-xs flex items-center justify-between">
-              <span className="text-slate-500 font-normal">Awaiting medical officer review</span>
-              <span className="font-semibold text-teal-700">3 follow-ups</span>
-            </div>
           </div>
         </div>
       </div>
