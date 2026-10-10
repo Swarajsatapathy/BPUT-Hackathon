@@ -21,6 +21,14 @@ const CaseSchema: Schema = new Schema(
     inputLanguage: { type: String, default: "en" },
     rawSymptomInput: { type: String, required: true },
     voiceTranscript: { type: String },
+    symptomDuration: { type: String },
+    followUpResponses: [
+      {
+        question: String,
+        answer: String,
+        recordedAt: { type: Date, default: Date.now },
+      }
+    ],
     translatedEnglishInput: { type: String, required: true },
     vitals: {
       bpSystolic: Number,

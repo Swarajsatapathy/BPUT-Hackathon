@@ -84,6 +84,12 @@ export interface DoctorReview {
   signedAt?: Date;
 }
 
+export interface FollowUpResponse {
+  question: string;
+  answer: string;
+  recordedAt?: Date;
+}
+
 export interface CaseRecord {
   _id: string; // e.g. CASE-2026-1001
   patientId: string; // FK to Patient
@@ -93,6 +99,8 @@ export interface CaseRecord {
   inputLanguage: string; // e.g. 'or', 'hi', 'en', 'bn', etc.
   rawSymptomInput: string;
   voiceTranscript?: string;
+  symptomDuration?: string; // e.g. "45 minutes", "3 days", "2 weeks"
+  followUpResponses?: FollowUpResponse[];
   translatedEnglishInput: string;
   vitals: Vitals;
   attachments: Attachment[];
@@ -115,4 +123,75 @@ export interface StaffMember {
   facilityName: string;
   facilityType: FacilityType;
   pin: string;
+}
+
+export interface ChangeItem {
+  id: string;
+  category: "symptom" | "vital" | "lab_report" | "duration" | "complaint" | "follow_up";
+  title: string;
+  description: string;
+  currentValue?: string;
+  previousValue?: string;
+  sourceCaseIdCurrent: string;
+  sourceDateCurrent: string;
+  sourceCaseIdPrevious?: string;
+  sourceDatePrevious?: string;
+  observationNote?: string;
+}
+
+export interface TimelineCaseSummary {
+  caseId: string;
+  tokenNumber: string;
+  facilityType: FacilityType;
+  status: CaseStatus;
+  submissionDate: string;
+  chiefComplaints: string[];
+  symptomDuration: string;
+  symptomDescription: string;
+  vitals: Vitals;
+  uploadedReports: Array<{
+    id: string;
+    type: string;
+    fileName: string;
+    ocrExtractedText?: string;
+    parsedValues?: Record<string, any>;
+  }>;
+  followUpResponses: Array<{ question: string; answer: string; recordedAt?: string }>;
+  triageOutput: {
+    urgencyLevel: UrgencyLevel;
+    urgencyScore: number;
+    urgencyReason: string;
+    timelineSummary: string;
+    chiefComplaints: string[];
+    suggestedFollowUpQuestions: string[];
+  };
+  doctorReview?: DoctorReview;
+  reviewerActions: Array<{
+    action: string;
+    actor: string;
+    timestamp: string;
+    details?: string;
+  }>;
+}
+
+export interface PatientHealthTimelineComparison {
+  patientId: string;
+  patientName: string;
+  currentCaseId: string;
+  totalCasesCount: number;
+  isReturningPatient: boolean;
+  
+  // Three required change detection sections
+  newlyReportedInfo: ChangeItem[];          // Section A
+  previouslyReportedAbsent: ChangeItem[];   // Section B
+  conflictingOrDifferingInfo: ChangeItem[]; // Section C
+
+  // Source-grounded synthesis
+  factualSummary: string;
+  isAiGenerated: boolean;
+  verifiedFacts: string[];
+  flaggedDiscrepancies: string[];
+
+  // Chronological timeline records
+  timelineCases: TimelineCaseSummary[];
 }

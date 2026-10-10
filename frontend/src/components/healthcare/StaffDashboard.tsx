@@ -9,12 +9,12 @@ import { StatsOverview } from "./StatsOverview";
 import { CaseReviewDrawer } from "./CaseReviewDrawer";
 import { ReferralSlipModal } from "./ReferralSlipModal";
 import { StatusBadge } from "../common/StatusBadge";
-import { 
-  Building2, 
-  RefreshCw, 
-  Search, 
-  Stethoscope, 
-  ChevronRight, 
+import {
+  Building2,
+  RefreshCw,
+  Search,
+  Stethoscope,
+  ChevronRight,
   RotateCcw,
   Download,
   FileSpreadsheet,
@@ -206,20 +206,20 @@ export const StaffDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      
+
       {/* Clinician Desk Header & Facility Switcher */}
       <div className="bg-white rounded-xl border border-slate-200/90 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-card">
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="text-base font-extrabold text-slate-900">
-              {currentStaff?.name || "Duty Medical Officer Console"}
+              {currentStaff?.name || t("dutyConsole")}
             </h2>
             <span className="bg-brand-50 text-brand-900 text-[11px] font-bold px-2.5 py-0.5 rounded-md border border-brand-200">
-              {currentStaff?.role || "Medical Officer"}
+              {currentStaff?.role === "Medical Officer" ? t("medicalOfficer") : (currentStaff?.role || t("medicalOfficer"))}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Active Priority Triage Queue & Clinical Review Board
+            {t("activeQueueSubtitle")}
           </p>
         </div>
 
@@ -231,11 +231,11 @@ export const StaffDashboard: React.FC = () => {
             className="bg-slate-50 border border-slate-300 text-slate-900 text-xs rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer font-semibold shadow-2xs"
           >
             <option value="ALL">{t("allFacilities")}</option>
-            <option value="PRIMARY_HEALTH_CENTER">Primary Health Centre (PHC)</option>
-            <option value="PUBLIC_HEALTH_CAMP">Public Health Outreach Camp</option>
-            <option value="CAMPUS_HEALTH_CENTER">Campus Health Centre</option>
-            <option value="INDUSTRIAL_HEALTH_UNIT">Industrial Health Unit</option>
-            <option value="DISTRICT_HOSPITAL">District Hospital</option>
+            <option value="PRIMARY_HEALTH_CENTER">{t("facility_PRIMARY_HEALTH_CENTER")}</option>
+            <option value="PUBLIC_HEALTH_CAMP">{t("facility_PUBLIC_HEALTH_CAMP")}</option>
+            <option value="CAMPUS_HEALTH_CENTER">{t("facility_CAMPUS_HEALTH_CENTER")}</option>
+            <option value="INDUSTRIAL_HEALTH_UNIT">{t("facility_INDUSTRIAL_HEALTH_UNIT")}</option>
+            <option value="DISTRICT_HOSPITAL">{t("facility_DISTRICT_HOSPITAL")}</option>
           </select>
 
           {/* Export Triage Log (CSV) */}
@@ -254,61 +254,59 @@ export const StaffDashboard: React.FC = () => {
             className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>Reset Demo Cases</span>
+            <span>{t("resetDemoCases")}</span>
           </button>
         </div>
       </div>
 
       {/* KPI Stats Overview with Interactive Filters */}
-      <StatsOverview 
-        stats={stats} 
+      <StatsOverview
+        stats={stats}
         activeTab={selectedUrgency}
         onSelectTab={(tabKey) => setSelectedUrgency(tabKey)}
       />
 
       {/* Triage Queue Table */}
       <div className="bg-white rounded-xl border border-slate-200/90 overflow-hidden shadow-card">
-        
+
         {/* Controls and Filter Bar */}
         <div className="p-3.5 bg-slate-50/90 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs">
-          
+
           {/* Urgency & Reviewed Filter Pills */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-600 font-bold mr-1">Queue Filter:</span>
+            <span className="text-slate-600 font-bold mr-1">{t("queueFilterLabel")}</span>
             {[
-              { key: "TOTAL_CASES", label: "Total Cases", count: stats.totalCases, isTotal: true },
-              { key: "ACTIVE_QUEUE", label: "Active Queue", count: stats.pendingReview },
+              { key: "TOTAL_CASES", label: t("totalCases"), count: stats.totalCases, isTotal: true },
+              { key: "ACTIVE_QUEUE", label: t("activeQueue"), count: stats.pendingReview },
               { key: "EMERGENCY_RED", label: t("tabEmergency"), count: stats.emergencyRed },
               { key: "URGENT_YELLOW", label: t("tabUrgent"), count: stats.urgentYellow },
               { key: "ROUTINE_GREEN", label: t("tabRoutine"), count: stats.routineGreen },
-              { key: "REVIEWED_CASE", label: "Reviewed Cases", count: stats.completed, isReviewed: true },
+              { key: "REVIEWED_CASE", label: t("reviewedCases"), count: stats.completed, isReviewed: true },
             ].map((urg) => {
               const isSelected = selectedUrgency === urg.key || (urg.key === "ACTIVE_QUEUE" && selectedUrgency === "ALL");
               return (
                 <button
                   key={urg.key}
                   onClick={() => setSelectedUrgency(urg.key)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 ${isSelected
                       ? urg.isTotal
                         ? "bg-slate-900 text-white shadow-sm ring-2 ring-slate-400"
                         : urg.isReviewed
-                        ? "bg-purple-700 text-white shadow-sm ring-2 ring-purple-300"
-                        : "bg-[#5cb4ee] text-slate-950 border border-[#3b93ce] shadow-sm"
+                          ? "bg-purple-700 text-white shadow-sm ring-2 ring-purple-300"
+                          : "bg-[#5cb4ee] text-slate-950 border border-[#3b93ce] shadow-sm"
                       : urg.isTotal
-                      ? "bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200"
-                      : urg.isReviewed
-                      ? "bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100"
-                      : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
-                  }`}
+                        ? "bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200"
+                        : urg.isReviewed
+                          ? "bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100"
+                          : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                    }`}
                 >
                   <span>{urg.label}</span>
                   {typeof urg.count === "number" && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-extrabold ${
-                      isSelected 
-                        ? "bg-black/20 text-current" 
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-extrabold ${isSelected
+                        ? "bg-black/20 text-current"
                         : "bg-slate-200 text-slate-800"
-                    }`}>
+                      }`}>
                       {urg.count}
                     </span>
                   )}
@@ -345,17 +343,17 @@ export const StaffDashboard: React.FC = () => {
             <div className="p-8 text-center text-slate-500 space-y-1">
               <p className="font-bold text-xs text-slate-700">
                 {selectedUrgency === "TOTAL_CASES"
-                  ? "No registered patient cases found."
-                  : selectedUrgency === "REVIEWED_CASE" 
-                  ? "No reviewed or discharged cases found." 
-                  : "No active waiting patients in this category."}
+                  ? t("noCasesTotal")
+                  : selectedUrgency === "REVIEWED_CASE"
+                    ? t("noCasesReviewed")
+                    : t("noCasesActive")}
               </p>
               <p className="text-[11px] text-slate-400">
                 {selectedUrgency === "TOTAL_CASES"
                   ? "Register new triage visits or click Reset Demo Cases to reload sample records."
-                  : selectedUrgency === "REVIEWED_CASE" 
-                  ? "Once a doctor signs off or refers a patient, they will appear here." 
-                  : "All cases in this category have been attended to."}
+                  : selectedUrgency === "REVIEWED_CASE"
+                    ? "Once a doctor signs off or refers a patient, they will appear here."
+                    : "All cases in this category have been attended to."}
               </p>
             </div>
           ) : (
@@ -368,17 +366,16 @@ export const StaffDashboard: React.FC = () => {
                 <div
                   key={c._id}
                   onClick={() => handleOpenCase(c)}
-                  className={`p-4 cursor-pointer transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3.5 ${
-                    isReviewed
+                  className={`p-4 cursor-pointer transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3.5 ${isReviewed
                       ? c.status === "REFERRED"
                         ? "bg-purple-50/40 hover:bg-purple-50/80 border-l-4 border-purple-600"
                         : "bg-emerald-50/30 hover:bg-emerald-50/70 border-l-4 border-emerald-500"
                       : isEmergency
-                      ? "bg-rose-50/40 hover:bg-rose-50/70 border-l-4 border-rose-600"
-                      : isUrgent
-                      ? "bg-amber-50/30 hover:bg-amber-50/60 border-l-4 border-amber-500"
-                      : "hover:bg-brand-50/30 border-l-4 border-[#5cb4ee]"
-                  }`}
+                        ? "bg-rose-50/40 hover:bg-rose-50/70 border-l-4 border-rose-600"
+                        : isUrgent
+                          ? "bg-amber-50/30 hover:bg-amber-50/60 border-l-4 border-amber-500"
+                          : "hover:bg-brand-50/30 border-l-4 border-[#5cb4ee]"
+                    }`}
                 >
                   <div className="space-y-1.5 max-w-3xl">
                     <div className="flex flex-wrap items-center gap-2">
@@ -388,12 +385,11 @@ export const StaffDashboard: React.FC = () => {
                       <span className="text-xs font-bold text-slate-800">
                         {c.patient?.fullName || "Citizen"} ({c.patient?.age}Y/{c.patient?.sex})
                       </span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
-                        c.status === "COMPLETED" ? "bg-emerald-100 text-emerald-900 border-emerald-300" :
-                        c.status === "REFERRED" ? "bg-purple-100 text-purple-900 border-purple-300" :
-                        "bg-slate-100 text-slate-700 border-slate-200"
-                      }`}>
-                        {c.status.replace(/_/g, " ")}
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${c.status === "COMPLETED" ? "bg-emerald-100 text-emerald-900 border-emerald-300" :
+                          c.status === "REFERRED" ? "bg-purple-100 text-purple-900 border-purple-300" :
+                            "bg-slate-100 text-slate-700 border-slate-200"
+                        }`}>
+                        {t(`status_${c.status}`) || c.status.replace(/_/g, " ")}
                       </span>
                       {c.doctorReview?.doctorName && (
                         <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 font-semibold">
@@ -409,14 +405,14 @@ export const StaffDashboard: React.FC = () => {
                     {/* If reviewed and has doctor impression / referral */}
                     {c.doctorReview?.clinicalImpression && (
                       <p className="text-[11px] text-slate-900 font-semibold bg-white/80 p-1.5 rounded border border-slate-200/80 line-clamp-1">
-                        <span className="text-slate-500 font-medium">Dr. Assessment: </span>
+                        <span className="text-slate-500 font-medium">{t("drAssessmentLabel")} </span>
                         {c.doctorReview.clinicalImpression}
                       </p>
                     )}
 
                     {c.doctorReview?.referralDetails?.referralFacilityName && (
                       <p className="text-[11px] text-purple-900 font-bold">
-                        ↳ Referred to: {c.doctorReview.referralDetails.referralFacilityName} ({c.doctorReview.referralDetails.urgencyOfTransfer || "Priority"})
+                        {t("referredToLabel")} {c.doctorReview.referralDetails.referralFacilityName} ({c.doctorReview.referralDetails.urgencyOfTransfer || "Priority"})
                       </p>
                     )}
 
@@ -443,7 +439,7 @@ export const StaffDashboard: React.FC = () => {
                         </span>
                       )}
                       <span className="text-slate-300">•</span>
-                      <span className="text-slate-500">{c.facilityType.replace(/_/g, " ")}</span>
+                      <span className="text-slate-500">{t(`facility_${c.facilityType}`) || c.facilityType.replace(/_/g, " ")}</span>
                     </div>
                   </div>
 

@@ -18,6 +18,9 @@ interface AuthContextType {
   setCurrentStaff: (staff: StaffMember | null) => void;
   isStaffLoggedIn: boolean;
   logoutStaff: () => void;
+  // Staff Auth Modal Control
+  showStaffAuthModal: boolean;
+  setShowStaffAuthModal: (show: boolean) => void;
   // Selected Facility
   selectedFacility: FacilityType;
   setSelectedFacility: (f: FacilityType) => void;
@@ -30,25 +33,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [currentStaff, setCurrentStaff] = useState<StaffMember | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<FacilityType>("ALL");
+  const [showStaffAuthModal, setShowStaffAuthModal] = useState<boolean>(false);
 
   useEffect(() => {
     // Restore session if available
     try {
+      let restoredStaff: StaffMember | null = null;
       const savedPatient = localStorage.getItem("triage_patient_session");
       if (savedPatient) {
         setCurrentPatient(JSON.parse(savedPatient));
       }
       const savedStaff = localStorage.getItem("triage_staff_session");
       if (savedStaff) {
-        setCurrentStaff(JSON.parse(savedStaff));
+        restoredStaff = JSON.parse(savedStaff);
+        setCurrentStaff(restoredStaff);
       }
       const savedFacility = localStorage.getItem("triage_selected_facility") as FacilityType;
       if (savedFacility) {
         setSelectedFacility(savedFacility);
       }
       const savedMode = localStorage.getItem("triage_portal_mode");
-      if (savedMode === "PATIENT" || savedMode === "STAFF") {
-        setPortalMode(savedMode);
+      // Only permit STAFF mode if an authenticated staff session is actively restored
+      if (savedMode === "STAFF" && restoredStaff) {
+        setPortalMode("STAFF");
+      } else {
+        setPortalMode("PATIENT");
       }
     } catch (e) {
       console.warn("Session restore error", e);
@@ -59,6 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentPatient(patient);
     if (patient) {
       localStorage.setItem("triage_patient_session", JSON.stringify(patient));
+      // Security: Clear any staff session when patient logs in
+      setCurrentStaff(null);
+      localStorage.removeItem("triage_staff_session");
+      setPortalMode("PATIENT");
     } else {
       localStorage.removeItem("triage_patient_session");
     }
@@ -68,6 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentStaff(staff);
     if (staff) {
       localStorage.setItem("triage_staff_session", JSON.stringify(staff));
+      setPortalMode("STAFF");
+      localStorage.setItem("triage_portal_mode", "STAFF");
+      setShowStaffAuthModal(false);
     } else {
       localStorage.removeItem("triage_staff_session");
     }
@@ -79,6 +95,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleSetPortalMode = (mode: PortalMode) => {
+    const savedStaff = localStorage.getItem("triage_staff_session");
+    if (mode === "STAFF" && !currentStaff && !savedStaff) {
+      // Must authenticate as Doctor / Staff first!
+      setShowStaffAuthModal(true);
+      return;
+    }
     setPortalMode(mode);
     localStorage.setItem("triage_portal_mode", mode);
   };
@@ -91,6 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logoutStaff = () => {
     setCurrentStaff(null);
     localStorage.removeItem("triage_staff_session");
+    setPortalMode("PATIENT");
+    localStorage.setItem("triage_portal_mode", "PATIENT");
   };
 
   return (
@@ -106,6 +130,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCurrentStaff: handleSetStaff,
         isStaffLoggedIn: !!currentStaff,
         logoutStaff,
+        showStaffAuthModal,
+        setShowStaffAuthModal,
         selectedFacility,
         setSelectedFacility: handleSetFacility,
       }}

@@ -99,6 +99,8 @@ export interface CaseRecord {
   attachments: Attachment[];
   triageOutput: TriageOutput;
   doctorReview?: DoctorReview;
+  symptomDuration?: string;
+  followUpResponses?: Array<{ question: string; answer: string; recordedAt?: string }>;
   patient?: {
     fullName: string;
     age: number;
@@ -124,4 +126,72 @@ export interface StaffMember {
   facilityName: string;
   facilityType: FacilityType;
   pin: string;
+}
+
+export interface ChangeItem {
+  id: string;
+  category: "symptom" | "vital" | "lab_report" | "duration" | "complaint" | "follow_up";
+  title: string;
+  description: string;
+  currentValue?: string;
+  previousValue?: string;
+  sourceCaseIdCurrent: string;
+  sourceDateCurrent: string;
+  sourceCaseIdPrevious?: string;
+  sourceDatePrevious?: string;
+  observationNote?: string;
+}
+
+export interface TimelineCaseSummary {
+  caseId: string;
+  tokenNumber: string;
+  facilityType: FacilityType;
+  status: CaseStatus;
+  submissionDate: string;
+  chiefComplaints: string[];
+  symptomDuration: string;
+  symptomDescription: string;
+  vitals: Vitals;
+  uploadedReports: Array<{
+    id: string;
+    type: string;
+    fileName: string;
+    ocrExtractedText?: string;
+    parsedValues?: Record<string, any>;
+  }>;
+  followUpResponses: Array<{ question: string; answer: string; recordedAt?: string }>;
+  triageOutput: {
+    urgencyLevel: UrgencyLevel;
+    urgencyScore: number;
+    urgencyReason: string;
+    timelineSummary: string;
+    chiefComplaints: string[];
+    suggestedFollowUpQuestions: string[];
+  };
+  doctorReview?: DoctorReview;
+  reviewerActions: Array<{
+    action: string;
+    actor: string;
+    timestamp: string;
+    details?: string;
+  }>;
+}
+
+export interface PatientHealthTimelineComparison {
+  patientId: string;
+  patientName: string;
+  currentCaseId: string;
+  totalCasesCount: number;
+  isReturningPatient: boolean;
+  
+  newlyReportedInfo: ChangeItem[];          // Section A
+  previouslyReportedAbsent: ChangeItem[];   // Section B
+  conflictingOrDifferingInfo: ChangeItem[]; // Section C
+
+  factualSummary: string;
+  isAiGenerated: boolean;
+  verifiedFacts: string[];
+  flaggedDiscrepancies: string[];
+
+  timelineCases: TimelineCaseSummary[];
 }

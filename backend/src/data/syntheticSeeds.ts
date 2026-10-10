@@ -101,7 +101,7 @@ export const seedPatients: Patient[] = [
 ];
 
 export const seedCases: CaseRecord[] = [
-  // 1. Emergency Red: Acute Coronary Syndrome (PHC Outpatient)
+  // 1. Emergency Red: Acute Coronary Syndrome (Current Active Encounter for PAT-10821)
   {
     _id: "CASE-2026-1001",
     patientId: "PAT-10821",
@@ -111,6 +111,19 @@ export const seedCases: CaseRecord[] = [
     inputLanguage: "or",
     rawSymptomInput: "ମୋ ଛାତି ମଝିରେ ବହୁତ ଜୋର ଚାପ ଏବଂ ଯନ୍ତ୍ରଣା ହେଉଛି। ଯନ୍ତ୍ରଣା ବାମ ହାତ ଏବଂ କାନ୍ଧକୁ ଯାଉଛି। ବହୁତ ଥଣ୍ଡା ଝାଳ ବୋହୁଛି ଏବଂ ନିଶ୍ୱାସ ନେବାରେ କଷ୍ଟ ହେଉଛି। (Severe crushing central chest pain radiating to left arm with cold diaphoresis).",
     voiceTranscript: "ମୋ ଛାତି ଫାଟିଯିବା ପରି ଲାଗୁଛି, ବାମ ବାହୁକୁ ଯନ୍ତ୍ରଣା ଯାଉଛି।",
+    symptomDuration: "45 minutes",
+    followUpResponses: [
+      {
+        question: "Did the chest pain start suddenly or build up gradually?",
+        answer: "Started suddenly 45 minutes ago while working in the field; progressively severe.",
+        recordedAt: new Date(Date.now() - 3600000 * 0.2),
+      },
+      {
+        question: "Do you have previous history of heart attacks or stenting?",
+        answer: "No previous heart attacks, but known hypertension with irregular medication.",
+        recordedAt: new Date(Date.now() - 3600000 * 0.2),
+      }
+    ],
     translatedEnglishInput: "52-year-old male presenting with severe crushing retrosternal chest pain radiating to the left shoulder and arm for the past 45 minutes, accompanied by profuse diaphoresis and acute shortness of breath.",
     vitals: {
       bpSystolic: 184,
@@ -167,6 +180,159 @@ export const seedCases: CaseRecord[] = [
     ],
     createdAt: new Date(Date.now() - 3600000 * 0.2),
     updatedAt: new Date(Date.now() - 3600000 * 0.2)
+  },
+
+  // 1b. Historical Visit 2 for PAT-10821: 10 Days Ago (30 Sep 2026)
+  {
+    _id: "CASE-2026-0985",
+    patientId: "PAT-10821",
+    tokenNumber: "PHC-YEL-06",
+    facilityType: "PRIMARY_HEALTH_CENTER",
+    status: "COMPLETED",
+    inputLanguage: "or",
+    rawSymptomInput: "କାଶ ଏବେ ମଧ୍ୟ ହେଉଛି। ଚାଲିବା ସମୟରେ ଟିକେ ଥକା ଲାଗୁଛି। ଛାତିରେ କୌଣସି ଯନ୍ତ୍ରଣା ନାହିଁ। (Cough still persisting, feeling tired on walking, no chest pain).",
+    voiceTranscript: "କାଶ ସମ୍ପୂର୍ଣ୍ଣ କମିନି, ଚାଲିଲେ ଥକା ଲାଗୁଛି।",
+    symptomDuration: "12 days",
+    followUpResponses: [
+      {
+        question: "Is there any chest heaviness or breathing difficulty?",
+        answer: "No chest pain, only dry cough and fatigue when walking.",
+        recordedAt: new Date(Date.now() - 3600000 * 24 * 10),
+      }
+    ],
+    translatedEnglishInput: "52-year-old male with persistent dry hacking cough for 12 days and exertional fatigue on walking uphill. No acute chest pain reported.",
+    vitals: {
+      bpSystolic: 148,
+      bpDiastolic: 92,
+      pulseRate: 82,
+      spo2: 97,
+      temperature: 98.6,
+      bloodSugar: 165,
+      respiratoryRate: 18,
+    },
+    attachments: [],
+    triageOutput: {
+      urgencyLevel: "URGENT_YELLOW",
+      urgencyScore: 5,
+      urgencyReason: "Subacute persistent cough (> 10 days) with moderate hypertension (BP 148/92 mmHg).",
+      timelineSummary: "Dry cough persisting for 12 days; progressive exertional fatigue.",
+      chiefComplaints: ["Dry cough", "Exertional fatigue"],
+      deterministicFlags: ["Stage 1 Hypertension: BP 148/92 mmHg"],
+      aiReasoningNotes: "Evaluate for post-viral bronchial hyperreactivity vs early cardiovascular etiology. Screen for ACE-inhibitor/antihypertensive induced cough.",
+      missingInformationAlerts: ["Sputum examination if cough becomes productive."],
+      suggestedFollowUpQuestions: ["Any fever spikes in the evening?", "Any swelling in feet?"],
+      patientFacingAdvisory: {
+        en: "🟡 Priority queue for doctor review.",
+        originalLanguage: "🟡 ଡାକ୍ତର ଦେଖିବା ପାଇଁ ଅପେକ୍ଷା କରନ୍ତୁ।",
+        languageCode: "or"
+      },
+      generatedAt: new Date(Date.now() - 3600000 * 24 * 10)
+    },
+    doctorReview: {
+      reviewedByDoctorId: "DOC-201",
+      doctorName: "Dr. Alok Nayak (MO)",
+      doctorRole: "Medical Officer",
+      overrideUrgency: "URGENT_YELLOW",
+      clinicalImpression: "Persistent subacute bronchitis with uncontrolled Stage 1 Hypertension. Adjusted anti-hypertensive regimen.",
+      prescribedMedications: [
+        "Tab Telmisartan 40mg OD (morning)",
+        "Syrup Levocetirizine + Ambroxol 10ml at bedtime x 5 days",
+        "Steam inhalation BD"
+      ],
+      signedAt: new Date(Date.now() - 3600000 * 24 * 10 + 3600000)
+    },
+    auditTrail: [
+      {
+        action: "CASE_CREATED",
+        actor: "PHC Registration Clerk",
+        timestamp: new Date(Date.now() - 3600000 * 24 * 10),
+        details: "Triage ticket issued."
+      },
+      {
+        action: "CASE_REVIEWED_AND_COMPLETED",
+        actor: "Dr. Alok Nayak (MO)",
+        timestamp: new Date(Date.now() - 3600000 * 24 * 10 + 3600000),
+        details: "Prescription provided and signed."
+      }
+    ],
+    createdAt: new Date(Date.now() - 3600000 * 24 * 10),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 10 + 3600000)
+  },
+
+  // 1c. Historical Visit 1 for PAT-10821: 22 Days Ago (18 Sep 2026)
+  {
+    _id: "CASE-2026-0920",
+    patientId: "PAT-10821",
+    tokenNumber: "PHC-GRN-03",
+    facilityType: "PRIMARY_HEALTH_CENTER",
+    status: "COMPLETED",
+    inputLanguage: "or",
+    rawSymptomInput: "ମୋତେ ୫ ଦିନ ହେବ ସାମାନ୍ୟ କାଶ ଏବଂ ସକାଳେ ମୁଣ୍ଡ ବିନ୍ଧା ହେଉଛି। ଥଣ୍ଡା ଲାଗୁଛି। (Mild dry cough for 5 days with morning headache).",
+    voiceTranscript: "୫ ଦିନ ହେବ କାଶ ଓ ମୁଣ୍ଡ ବିନ୍ଧା।",
+    symptomDuration: "5 days",
+    followUpResponses: [
+      {
+        question: "Any chest tightness or pain?",
+        answer: "No, only throat tickle and mild headache.",
+        recordedAt: new Date(Date.now() - 3600000 * 24 * 22),
+      }
+    ],
+    translatedEnglishInput: "52-year-old male presenting with mild dry cough for 5 days and occasional morning frontal headache. No chest pain.",
+    vitals: {
+      bpSystolic: 138,
+      bpDiastolic: 88,
+      pulseRate: 76,
+      spo2: 98,
+      temperature: 98.4,
+      bloodSugar: 140,
+      respiratoryRate: 16,
+    },
+    attachments: [],
+    triageOutput: {
+      urgencyLevel: "ROUTINE_GREEN",
+      urgencyScore: 2,
+      urgencyReason: "Mild upper respiratory symptoms with stable vitals (BP 138/88, SpO2 98%).",
+      timelineSummary: "Mild dry cough onset 5 days ago following seasonal weather change.",
+      chiefComplaints: ["Dry cough", "Mild headache"],
+      deterministicFlags: [],
+      aiReasoningNotes: "Likely seasonal allergic/viral pharyngitis. Baseline BP slightly elevated at 138/88 mmHg.",
+      missingInformationAlerts: [],
+      suggestedFollowUpQuestions: ["Any sore throat or difficulty swallowing?"],
+      patientFacingAdvisory: {
+        en: "🟢 General OPD consultation queue.",
+        originalLanguage: "🟢 ସାଧାରଣ ଧାଡ଼ିରେ ଅପେକ୍ଷା କରନ୍ତୁ।",
+        languageCode: "or"
+      },
+      generatedAt: new Date(Date.now() - 3600000 * 24 * 22)
+    },
+    doctorReview: {
+      reviewedByDoctorId: "DOC-201",
+      doctorName: "Dr. Alok Nayak (MO)",
+      doctorRole: "Medical Officer",
+      overrideUrgency: "ROUTINE_GREEN",
+      clinicalImpression: "Mild upper respiratory irritation. Continue hydration. Advised lifestyle BP monitoring.",
+      prescribedMedications: [
+        "Syrup Dextromethorphan 10ml TDS x 3 days",
+        "Tab Paracetamol 500mg SOS"
+      ],
+      signedAt: new Date(Date.now() - 3600000 * 24 * 22 + 3600000)
+    },
+    auditTrail: [
+      {
+        action: "CASE_CREATED",
+        actor: "PHC Registration Clerk",
+        timestamp: new Date(Date.now() - 3600000 * 24 * 22),
+        details: "Routine token issued."
+      },
+      {
+        action: "CASE_REVIEWED_AND_COMPLETED",
+        actor: "Dr. Alok Nayak (MO)",
+        timestamp: new Date(Date.now() - 3600000 * 24 * 22 + 3600000),
+        details: "Case closed after consultation."
+      }
+    ],
+    createdAt: new Date(Date.now() - 3600000 * 24 * 22),
+    updatedAt: new Date(Date.now() - 3600000 * 24 * 22 + 3600000)
   },
 
   // 2. Urgent Yellow: Campus Fever & Thrombocytopenia (Campus Health Center)

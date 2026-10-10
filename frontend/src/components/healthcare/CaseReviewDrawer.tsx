@@ -11,7 +11,9 @@ import {
   AlertCircle, 
   AlertTriangle, 
   Check, 
+  Clock,
   FileText, 
+  GitCompare,
   HelpCircle, 
   History, 
   Stethoscope, 
@@ -21,6 +23,7 @@ import {
   Square,
   X 
 } from "lucide-react";
+import { PatientHealthTimeline } from "./PatientHealthTimeline";
 
 interface CaseReviewDrawerProps {
   isOpen: boolean;
@@ -49,6 +52,9 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
   );
   const [overrideReason, setOverrideReason] = useState(caseData.doctorReview?.overrideReason || "");
   const [clinicalImpression, setClinicalImpression] = useState(caseData.doctorReview?.clinicalImpression || "");
+  const [prescriptions, setPrescriptions] = useState(
+    caseData.doctorReview?.prescribedMedications?.join("\n") || ""
+  );
   const [referralFacility, setReferralFacility] = useState(
     caseData.doctorReview?.referralDetails?.referralFacilityName || "District Headquarters Hospital"
   );
@@ -58,6 +64,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
   const [isReferredMode, setIsReferredMode] = useState(caseData.doctorReview?.referralDetails?.isReferred || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
@@ -92,6 +99,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
         overrideUrgency: overrideUrgency !== caseData.triageOutput.urgencyLevel ? overrideUrgency : undefined,
         overrideReason: overrideReason || undefined,
         clinicalImpression: clinicalImpression.trim() || undefined,
+        prescribedMedications: prescriptions.split("\n").map(s => s.trim()).filter(Boolean),
         referralDetails: (status === "REFERRED" || isReferredMode) ? {
           isReferred: true,
           referralFacilityName: referralFacility,
@@ -103,6 +111,9 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
       });
 
       if (res.success && res.case) {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("case_reviewed", { detail: res.case }));
+        }
         onCaseUpdated(res.case);
         if (status === "REFERRED") {
           onOpenReferralModal(res.case);
@@ -133,7 +144,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
               <StatusBadge urgency={caseData.triageOutput.urgencyLevel} size="sm" />
             </div>
             <p className="text-[11px] text-slate-900 font-medium mt-0.5">
-              {caseData.facilityType.replace(/_/g, " ")} • Registered: {new Date(caseData.createdAt).toLocaleTimeString()}
+              {t(`facility_${caseData.facilityType}`) || caseData.facilityType.replace(/_/g, " ")} • Registered: {new Date(caseData.createdAt).toLocaleTimeString()}
             </p>
           </div>
 
@@ -162,36 +173,33 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
               </p>
             </div>
 
-            {patientHistory.length > 0 && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowHistoryModal(!showHistoryModal)}
-                className="bg-white hover:bg-slate-100 text-slate-700 px-2.5 py-1 rounded border border-slate-300 text-xs font-semibold flex items-center gap-1 shadow-2xs"
+                onClick={() => setShowTimeline(!showTimeline)}
+                className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                  showTimeline
+                    ? "bg-[#18548a] text-white ring-2 ring-[#5cb4ee]"
+                    : "bg-white hover:bg-slate-100 text-[#18548a] border border-slate-300"
+                }`}
               >
-                <History className="w-3.5 h-3.5 text-[#18548a]" />
-                <span>Past Visits ({patientHistory.length})</span>
+                <Clock className="w-3.5 h-3.5 text-[#18548a]" />
+                <span>Health Timeline & Changes</span>
+                <span className="bg-[#5cb4ee]/20 text-[#18548a] text-[10px] font-mono px-1.5 py-0.2 rounded font-bold">
+                  {showTimeline ? "Hide" : "Audit"}
+                </span>
               </button>
-            )}
+            </div>
           </div>
 
-          {/* Past History Modal */}
-          {showHistoryModal && (
-            <div className="bg-slate-50 border border-slate-300 p-3 rounded space-y-2">
-              <span className="font-bold text-slate-800 text-[11px] block">
-                Previous Records for this Patient
-              </span>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                {patientHistory.map((h) => (
-                  <div key={h._id} className="bg-white p-2 rounded border border-slate-200 flex items-center justify-between text-[11px]">
-                    <div>
-                      <span className="font-mono font-semibold text-slate-800">{h._id}</span>
-                      <span className="text-slate-500 ml-2">({new Date(h.createdAt).toLocaleDateString()})</span>
-                      <p className="text-slate-600 truncate max-w-md">{h.translatedEnglishInput}</p>
-                    </div>
-                    <StatusBadge urgency={h.triageOutput.urgencyLevel} size="sm" />
-                  </div>
-                ))}
-              </div>
+          {/* Health Timeline & Change Detection Section */}
+          {showTimeline && (
+            <div className="my-2 transition-all">
+              <PatientHealthTimeline
+                caseId={caseData._id}
+                currentStaff={currentStaff}
+                onClose={() => setShowTimeline(false)}
+              />
             </div>
           )}
 
@@ -299,7 +307,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
 
           </div>
 
-          {/* 5. Triage Summary & Clinician Follow-up Prompts */}
+          {/* 5. Triage Summary & Clinician Follow-up Questions */}
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -332,11 +340,11 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="bg-white p-3 rounded-lg border border-slate-200">
-                <span className="font-bold text-slate-800 block mb-0.5">Timeline:</span>
+                <span className="font-bold text-slate-800 block mb-0.5">{t("timelineHeader")}</span>
                 <p className="text-slate-600 leading-relaxed">{caseData.triageOutput.timelineSummary}</p>
               </div>
               <div className="bg-white p-3 rounded-lg border border-slate-200">
-                <span className="font-bold text-slate-800 block mb-0.5">Urgency Rationale:</span>
+                <span className="font-bold text-slate-800 block mb-0.5">{t("urgencyRationale")}</span>
                 <p className="text-slate-600 leading-relaxed">{caseData.triageOutput.urgencyReason}</p>
               </div>
             </div>
@@ -400,7 +408,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
 
               <div>
                 <label className="block text-slate-300 font-medium mb-1">
-                  Disposition Action
+                  {t("dispositionAction")}
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -412,7 +420,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
                         : "bg-slate-800 border-slate-700 text-slate-400"
                     }`}
                   >
-                    Treat Locally
+                    {t("treatLocally")}
                   </button>
                   <button
                     type="button"
@@ -423,7 +431,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
                         : "bg-slate-800 border-slate-700 text-slate-400"
                     }`}
                   >
-                    Refer Patient
+                    {t("referPatient")}
                   </button>
                 </div>
               </div>
@@ -437,15 +445,29 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
                 rows={2}
                 value={clinicalImpression}
                 onChange={(e) => setClinicalImpression(e.target.value)}
-                placeholder="Enter clinical assessment, prescribed medications, or advice..."
+                placeholder="Enter clinical assessment, diagnosis, or physician advice..."
                 className="w-full bg-slate-800 text-white border border-slate-700 rounded p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#5cb4ee]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-medium mb-1 text-xs flex items-center justify-between">
+                <span>💊 {t("prescribedMedications") || "Prescribed Medications / Rx"} (1 per line)</span>
+                <span className="text-[10px] text-[#5cb4ee] font-semibold">Included in Patient Prescription Document</span>
+              </label>
+              <textarea
+                rows={3}
+                value={prescriptions}
+                onChange={(e) => setPrescriptions(e.target.value)}
+                placeholder={"e.g.\nTab Paracetamol 650mg TDS x 3 days\nORS Sachet 1 packet in 1L water PRN\nCap Amoxicillin 500mg BD x 5 days"}
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded p-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[#5cb4ee]"
               />
             </div>
 
             {isReferredMode && (
               <div className="bg-slate-800/80 border border-slate-700 p-2.5 rounded grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div>
-                  <label className="block text-slate-300 mb-0.5">Referral Facility</label>
+                  <label className="block text-slate-300 mb-0.5">{t("referralFacility")}</label>
                   <input
                     type="text"
                     value={referralFacility}
@@ -455,15 +477,15 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-0.5">Transport Urgency</label>
+                  <label className="block text-slate-300 mb-0.5">{t("transportUrgency")}</label>
                   <select
                     value={transferUrgency}
                     onChange={(e) => setTransferUrgency(e.target.value)}
                     className="w-full bg-slate-900 text-white border border-slate-700 rounded p-1.5 text-xs focus:outline-none"
                   >
-                    <option value="Immediate Ambulance">Immediate Ambulance (108)</option>
-                    <option value="Within 24 Hours">Within 24 Hours</option>
-                    <option value="Elective OPD">Elective OPD</option>
+                    <option value="Immediate Ambulance">{t("ambulance108")}</option>
+                    <option value="Within 24 Hours">{t("within24Hours")}</option>
+                    <option value="Elective OPD">{t("electiveOpd")}</option>
                   </select>
                 </div>
               </div>
@@ -506,7 +528,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
           {/* 7. Audit Log */}
           <div className="border-t border-slate-200 pt-3 space-y-1">
             <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px] block">
-              Audit Trail
+              {t("auditTrail")}
             </span>
             <div className="space-y-1 max-h-24 overflow-y-auto text-[11px] text-slate-500">
               {caseData.auditTrail?.map((log, i) => (

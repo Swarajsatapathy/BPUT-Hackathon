@@ -109,13 +109,18 @@ export const staffLogin = async (req: Request, res: Response): Promise<void> => 
     const { staffId, pin } = req.body;
     const staff = await store.findStaffById(staffId);
 
-    if (!staff) {
-      res.status(404).json({ error: "Staff member not found." });
+    if (!staffId || !pin) {
+      res.status(400).json({ error: "Doctor/Staff ID and PIN/Password are required." });
       return;
     }
 
-    if (pin && staff.pin !== pin) {
-      res.status(401).json({ error: "Invalid PIN entered." });
+    if (!staff) {
+      res.status(404).json({ error: "Doctor/Healthcare worker profile not found for this ID." });
+      return;
+    }
+
+    if (staff.pin !== pin.trim()) {
+      res.status(401).json({ error: "Invalid PIN / Password entered." });
       return;
     }
 

@@ -101,6 +101,15 @@ export const submitDoctorReview = async (
   return res.data;
 };
 
+export const fetchPatientTimelineComparison = async (caseId: string, staffId?: string) => {
+  const headers: Record<string, string> = {};
+  if (staffId) {
+    headers["x-staff-id"] = staffId;
+  }
+  const res = await api.get(`/cases/${caseId}/timeline`, { headers });
+  return res.data;
+};
+
 export const processOcrUpload = async (imageBase64: string, mimeType: string = "image/jpeg") => {
   const res = await api.post("/triage/ocr", { imageBase64, mimeType });
   return res.data;

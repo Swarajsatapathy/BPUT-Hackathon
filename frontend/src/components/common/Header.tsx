@@ -10,7 +10,8 @@ import {
   Stethoscope, 
   User, 
   ShieldCheck,
-  Activity
+  Activity,
+  Lock
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -22,7 +23,8 @@ export const Header: React.FC = () => {
     logoutPatient, 
     currentStaff, 
     isStaffLoggedIn, 
-    logoutStaff 
+    logoutStaff,
+    setShowStaffAuthModal
   } = useAuth();
   
   const { currentLanguage, setLanguageCode, allLanguages, t } = useLanguage();
@@ -39,16 +41,16 @@ export const Header: React.FC = () => {
               <span className="inline-block w-2.5 h-2 bg-[#138808] rounded-xs"></span>
             </div>
             <span className="font-semibold text-slate-200 tracking-wide">
-              Ministry of Health & Family Welfare • Government of India
+              {t("ministryBanner")}
             </span>
           </div>
           <div className="hidden sm:flex items-center space-x-3 text-[11px] text-slate-400">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-[#5cb4ee]" />
-              ABDM Certified Protocol
+              {t("abdmProtocol")}
             </span>
             <span className="text-slate-600">|</span>
-            <span>Human-in-the-Loop Triage</span>
+            <span>{t("humanInLoop")}</span>
           </div>
         </div>
       </div>
@@ -94,15 +96,25 @@ export const Header: React.FC = () => {
                 <span>{t("portalSelectPatient")}</span>
               </button>
               <button
-                onClick={() => setPortalMode("STAFF")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                onClick={() => {
+                  if (isStaffLoggedIn) {
+                    setPortalMode("STAFF");
+                  } else {
+                    setShowStaffAuthModal(true);
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   portalMode === "STAFF"
                     ? "bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white shadow-sm"
                     : "text-slate-300 hover:text-white"
                 }`}
+                title={isStaffLoggedIn ? "Healthcare Worker Console" : "Clinician Authentication Required"}
               >
                 <Building2 className="w-3.5 h-3.5" />
                 <span>{t("portalSelectHealthcare")}</span>
+                {!isStaffLoggedIn && (
+                  <Lock className="w-3 h-3 text-amber-300 ml-0.5" />
+                )}
               </button>
             </div>
 

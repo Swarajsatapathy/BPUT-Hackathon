@@ -4,11 +4,11 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { registerPatientProfile, sendPatientOtp, verifyPatientOtp } from "../../services/api";
-import { 
-  KeyRound, 
-  Phone, 
-  User, 
-  UserPlus, 
+import {
+  KeyRound,
+  Phone,
+  User,
+  UserPlus,
   AlertCircle,
   X
 } from "lucide-react";
@@ -34,7 +34,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({ isOpen, onCl
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"Male" | "Female" | "Other" | "Prefer not to say">("Male");
   const [bloodGroup, setBloodGroup] = useState("");
-  
+
   // Optional Emergency contact
   const [emergencyName, setEmergencyName] = useState("");
   const [emergencyRelation, setEmergencyRelation] = useState("Spouse");
@@ -128,14 +128,14 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose) onClose();
       }}
     >
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
-        
+
         {/* Header */}
         <div className="bg-gradient-to-r from-[#5cb4ee] via-[#48aae9] to-[#389ad8] text-slate-950 px-6 py-4 flex items-center justify-between border-b border-[#3b93ce]">
           <div className="flex items-center space-x-2.5">

@@ -17,13 +17,19 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const { portalMode, isPatientLoggedIn, isStaffLoggedIn } = useAuth();
+  const { 
+    portalMode, 
+    setPortalMode,
+    isPatientLoggedIn, 
+    isStaffLoggedIn, 
+    showStaffAuthModal, 
+    setShowStaffAuthModal 
+  } = useAuth();
   const { t, currentLanguage } = useLanguage();
 
   const [hasConsented, setHasConsented] = useState<boolean>(true);
   const [showConsentModal, setShowConsentModal] = useState<boolean>(false);
   const [showPatientAuth, setShowPatientAuth] = useState<boolean>(false);
-  const [showStaffAuth, setShowStaffAuth] = useState<boolean>(false);
 
   useEffect(() => {
     const consentStored = localStorage.getItem("triage_consent_accepted");
@@ -155,7 +161,7 @@ export default function Home() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setShowStaffAuth(true)}
+                  onClick={() => setShowStaffAuthModal(true)}
                   className="w-full btn-maya-primary text-xs px-5 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer font-bold"
                 >
                   <Stethoscope className="w-4 h-4 text-slate-950" />
@@ -178,16 +184,19 @@ export default function Home() {
       />
 
       <StaffLoginModal
-        isOpen={showStaffAuth}
-        onClose={() => setShowStaffAuth(false)}
-        onSuccess={() => setShowStaffAuth(false)}
+        isOpen={showStaffAuthModal}
+        onClose={() => setShowStaffAuthModal(false)}
+        onSuccess={() => {
+          setShowStaffAuthModal(false);
+          setPortalMode("STAFF");
+        }}
       />
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-3 text-xs text-slate-500 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <span>National Multimodal Healthcare Triage Support Portal</span>
-          <span className="text-[11px] text-slate-400">Institutional Protocol Compliance • Non-Diagnostic • Human-in-the-Loop</span>
+          <span>{t("footerPortal")}</span>
+          <span className="text-[11px] text-slate-400">{t("footerCompliance")}</span>
         </div>
       </footer>
 
