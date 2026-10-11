@@ -221,8 +221,12 @@ export default function Home() {
 
           {!isStaffLoggedIn ? (
             <div className="max-w-md mx-auto my-12 bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-5 shadow-sm">
-              <div className="w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl flex items-center justify-center mx-auto border border-teal-200 shadow-2xs">
-                <Stethoscope className="w-7 h-7 text-teal-700" />
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto border border-teal-200/90 shadow-2xs overflow-hidden p-0.5">
+                <img
+                  src="/images/swasthya-sakhi-doctor.png"
+                  alt="Swasthya Sakhi Doctor"
+                  className="w-full h-full object-cover object-center rounded-xl"
+                />
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-lg font-bold text-slate-900">

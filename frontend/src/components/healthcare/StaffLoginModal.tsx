@@ -87,8 +87,12 @@ export const StaffLoginModal: React.FC<StaffLoginModalProps> = ({ isOpen, onClos
         {/* Header */}
         <div className="bg-gradient-to-r from-[#5cb4ee] via-[#48aae9] to-[#389ad8] text-slate-950 px-6 py-4 flex items-center justify-between border-b border-[#3b93ce]">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/40 flex items-center justify-center border border-white/40">
-              <Stethoscope className="w-4 h-4 text-slate-950" />
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-white/60 overflow-hidden shadow-2xs shrink-0">
+              <img
+                src="/images/swasthya-sakhi-doctor.png"
+                alt="Swasthya Sakhi"
+                className="w-full h-full object-cover object-center"
+              />
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-slate-950">{t("staffHeroTitle")}</h3>

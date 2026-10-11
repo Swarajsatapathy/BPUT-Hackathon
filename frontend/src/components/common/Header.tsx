@@ -6,7 +6,6 @@ import { useLanguage } from "../../context/LanguageContext";
 import {
   Globe,
   LogOut,
-  Stethoscope,
   ShieldCheck,
   Lock,
   User,
@@ -42,9 +41,13 @@ export const Header: React.FC = () => {
           onClick={() => setPortalMode("OVERVIEW")}
           className="flex items-center gap-3 text-left cursor-pointer group"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs group-hover:bg-teal-800 transition-colors">
-            <Stethoscope className="w-5 h-5" aria-hidden="true" />
-          </span>
+          <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white border border-teal-200/90 shadow-2xs overflow-hidden shrink-0 group-hover:border-teal-400 group-hover:shadow-xs transition-all">
+            <img
+              src="/images/swasthya-sakhi-doctor.png"
+              alt="Swasthya Sakhi"
+              className="h-full w-full object-cover object-center"
+            />
+          </div>
           <span className="flex flex-col leading-tight">
             <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-teal-800 transition-colors">
               Swasthya Sakhi
