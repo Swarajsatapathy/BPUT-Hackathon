@@ -37,7 +37,7 @@ export async function processTriageWithAI(input: TriageInputPayload): Promise<{
 
   try {
     const model = gemini.getGenerativeModel({
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
         temperature: 0.1, // Low temperature for factual medical triage
@@ -260,7 +260,7 @@ export async function parseDocumentOCRWithAI(imageBase64: string, mimeType: stri
 
   try {
     const model = gemini.getGenerativeModel({
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash",
       generationConfig: { responseMimeType: "application/json" }
     });
 
@@ -302,16 +302,58 @@ Return strictly JSON:
   }
 }
 
+const CANDIDATE_GEMINI_MODELS = [
+  "gemini-3.5-flash",
+  "gemini-3.6-flash",
+  "gemini-3.7-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+  "gemini-3.1-flash-lite",
+];
+
+export function extractRawBase64(dataUriOrBase64: string): string {
+  if (!dataUriOrBase64) return "";
+  const commaIdx = dataUriOrBase64.indexOf(",");
+  return commaIdx !== -1 ? dataUriOrBase64.slice(commaIdx + 1).trim() : dataUriOrBase64.trim();
+}
+
+export async function callGeminiWithFallback(
+  parts: any[],
+  generationConfig?: any
+): Promise<string> {
+  const gemini = getGeminiClient();
+  if (!gemini) throw new Error("Gemini client not initialized");
+
+  let lastError: any = null;
+  for (const modelName of CANDIDATE_GEMINI_MODELS) {
+    try {
+      const model = gemini.getGenerativeModel({
+        model: modelName,
+        generationConfig: generationConfig,
+      });
+      const response = await model.generateContent(parts);
+      return response.response.text();
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`⚠️ Model ${modelName} returned error: ${err.message}. Trying next candidate...`);
+      await new Promise((r) => setTimeout(r, 300));
+    }
+  }
+  throw lastError;
+}
+
 export async function transcribeAudioWithAI(
   audioBase64: string,
   mimeType: string = "audio/webm",
   expectedLanguage: string = "en",
-  interimTextHint?: string
+  interimTextHint?: string,
+  isLiveStream: boolean = false
 ): Promise<{
   transcript: string;
   transcriptEnglish: string;
   detectedLanguage?: string;
   detectedVitals?: Partial<Vitals>;
+  isLiveStream?: boolean;
 }> {
   const gemini = getGeminiClient();
 
@@ -322,30 +364,72 @@ export async function transcribeAudioWithAI(
     };
   }
 
+  // Filter out browser WebSpeech English gibberish and UI placeholders
+  const isInvalidHint = Boolean(
+    !interimTextHint ||
+    interimTextHint.includes("ରେକର୍ଡ") ||
+    interimTextHint.includes("ବିଶ୍ଳେଷଣ") ||
+    interimTextHint.includes("Transcribing") ||
+    interimTextHint.includes("Listening") ||
+    interimTextHint.includes("🎙️") ||
+    interimTextHint.includes("⏳") ||
+    (expectedLanguage !== "en" &&
+      /^[a-zA-Z\s,.'"-]+$/.test(interimTextHint) &&
+      (expectedLanguage === "or" || expectedLanguage === "as"))
+  );
+  const safeInterimHint = isInvalidHint ? "" : (interimTextHint || "").trim();
+
   try {
-    const model = gemini.getGenerativeModel({
-      model: "gemini-3.8-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.1,
+    const cleanBase64 = extractRawBase64(audioBase64);
+    const cleanMimeType = mimeType ? mimeType.split(";")[0].trim() : "audio/webm";
+
+    // Guard: If audio is completely missing or under 150 chars, do not send to Gemini to hallucinate
+    if (!cleanBase64 || cleanBase64.length < 150) {
+      if (safeInterimHint) {
+        return translateClinicalTextWithAI(safeInterimHint, expectedLanguage).then((res) => ({
+          transcript: safeInterimHint,
+          transcriptEnglish: res.translatedEnglish,
+          detectedLanguage: res.detectedLanguage || (expectedLanguage === "or" ? "Odia (ଓଡ଼ିଆ)" : undefined),
+          detectedVitals: res.detectedVitals,
+          isLiveStream,
+        }));
       }
-    });
+      return {
+        transcript: expectedLanguage === "or"
+          ? "ସ୍ୱର ଶୁଣାଗଲା ନାହିଁ, ଦୟାକରି ମାଇକ୍ ପାଖରେ ପୁଣି କୁହନ୍ତୁ (No audio detected, please speak again)"
+          : "Audio recording was empty or silent. Please speak into the microphone.",
+        transcriptEnglish: "No audio detected. Please check microphone and speak clearly.",
+        detectedLanguage: expectedLanguage === "or" ? "Odia (ଓଡ଼ିଆ)" : undefined,
+        isLiveStream,
+      };
+    }
 
-    const cleanBase64 = audioBase64.replace(/^data:[^;]+;base64,/, "");
-
-    const prompt = `
+    const fullPrompt = `
 You are an expert Clinical Speech Recognition and Multilingual Voice Transcriber for Indian Healthcare contexts (PHCs, Health Camps, District Hospitals, Community Health Clinics).
 Listen to the provided voice audio recording carefully. The speaker is describing medical symptoms, complaints, or health issues.
 
 Language Context:
 - Target Spoken Language Code: "${expectedLanguage}" (e.g. "or" = Odia, "hi" = Hindi, "bn" = Bengali, "te" = Telugu, "ta" = Tamil, "mr" = Marathi, "gu" = Gujarati, "kn" = Kannada, "ml" = Malayalam, "pa" = Punjabi, "as" = Assamese, "en" = English, "auto" = Auto-detect).
-${interimTextHint ? `- Live phonetic/speech hint from browser: "${interimTextHint}"` : ""}
+${safeInterimHint ? `- Live phonetic/speech hint from browser: "${safeInterimHint}"` : ""}
 
-Transcription & Translation Instructions:
-1. "transcript": Transcribe the exact words spoken into the original language and script (e.g. for Odia like "moti Jara Haiti / matte jwara heuchi", output proper Odia "ମୋତେ ଜ୍ୱର ହୋଇଛି" and/or Romanized words).
-2. "transcriptEnglish": Provide a natural, grammatically correct clinical English translation of the symptom narrative (e.g., "I have a fever / suffering from febrile illness.").
-3. "detectedLanguage": Name of the detected spoken language (e.g. "Odia (ଓଡ଼ିଆ)", "Hindi (हिन्दी)", "Bengali (বাংলা)", "Telugu (తెలుగు)", "English", etc.).
-4. "detectedVitals": If the patient or healthcare worker mentions any vital signs or measurements in their speech (e.g., blood pressure "150 over 90", pulse "110", oxygen/SpO2 "93%", temperature "102 degrees", sugar "220"), extract the numbers into the detectedVitals object.
+CRITICAL INSTRUCTIONS FOR ODIA (language code "or"):
+If the target language is "or" (Odia):
+- The user is speaking in Odia language. Listen to the actual audio phonetics carefully.
+- Transcribe the spoken symptoms in native Odia script (ଓଡ଼ିଆ ଲିପି), for example: "ମୋର ଜର ହେଇଛି" / "ମୋର ଜ୍ୱର ହୋଇଛି", "ମୋର ଝାଡ଼ା ଓ ବାନ୍ତି ହେଉଛି", "ମୁଣ୍ଡ ବିନ୍ଧୁଛି", "ଛାତିରେ କଷ୍ଟ ହେଉଛି", "କାଶ ହେଉଛି", "ପେଟ କାଟୁଛି", etc.
+- In "transcript": provide the text in authentic Odia script (ଓଡ଼ିଆ ଲିପି). Do NOT return English words or English gibberish.
+- In "transcriptEnglish": provide an accurate, natural clinical English translation (e.g., "I have a fever" or "I have diarrhea and vomiting").
+- In "detectedLanguage": set to "Odia (ଓଡ଼ିଆ)".
+
+STRICT ANTI-HALLUCINATION RULES:
+- Listen to what was ACTUALLY pronounced in the audio.
+- NEVER return generic placeholders like "ମୋର ସ୍ୱାସ୍ଥ୍ୟ ସମସ୍ୟା ହୋଇଛି (ଓଡ଼ିଆ ସ୍ୱର ଗ୍ରହଣ କରାଗଲା)" or "Patient described symptoms in Odia".
+- If the patient says "moro jara heichi" or "mate jwara heichi", transcribe "ମୋର ଜର ହେଇଛି" / "ମତେ ଜ୍ୱର ହୋଇଛି" and translate as "I have a fever".
+
+General Instructions:
+1. "transcript": Transcribe the exact words spoken into the original native language and script (e.g. Odia script for Odia, Devanagari script for Hindi, Bengali script for Bengali, etc.).
+2. "transcriptEnglish": Provide a natural, grammatically correct clinical English translation of the symptom narrative.
+3. "detectedLanguage": Name of the detected spoken language (e.g. "Odia (ଓଡ଼ିଆ)", "Hindi (हिन्दी)", "Bengali (বাংলা)", etc.).
+4. "detectedVitals": Extract any vital signs mentioned in speech (BP, pulse, SpO2, temp, blood sugar).
 
 Respond strictly in JSON:
 {
@@ -363,39 +447,58 @@ Respond strictly in JSON:
 }
 `;
 
-    const parts: any[] = [prompt];
-    if (cleanBase64 && cleanBase64.length > 50) {
-      parts.push({
+    const liveStreamPrompt = `
+You are an ultra-fast Real-Time Speech Recognizer for Indian Healthcare. Target Language Code: "${expectedLanguage}".
+Listen to the audio and transcribe what has been spoken so far immediately into native script (for Odia "or", use authentic Odia script ଓଡ଼ିଆ ଲିପି like "ମୋର ଜର ହେଇଛି").
+Also provide a quick clinical English translation.
+Return strictly JSON:
+{
+  "transcript": "Words spoken so far in native script",
+  "transcriptEnglish": "English translation so far",
+  "detectedLanguage": "${expectedLanguage === 'or' ? 'Odia (ଓଡ଼ିଆ)' : 'Detected Language'}"
+}
+`;
+
+    const prompt = isLiveStream ? liveStreamPrompt : fullPrompt;
+
+    // Multi-modal parts: Media part MUST be placed first, followed by prompt
+    const parts: any[] = [
+      {
         inlineData: {
           data: cleanBase64,
-          mimeType: mimeType.split(";")[0] || "audio/webm"
-        }
-      });
-    }
+          mimeType: cleanMimeType,
+        },
+      },
+      prompt,
+    ];
 
-    const result = await model.generateContent(parts);
-    const text = result.response.text();
+    const text = await callGeminiWithFallback(parts, {
+      responseMimeType: "application/json",
+      temperature: 0.1,
+    });
+
     const parsed = JSON.parse(text);
     return {
-      transcript: parsed.transcript || interimTextHint || "",
-      transcriptEnglish: parsed.transcriptEnglish || parsed.transcript || interimTextHint || "",
-      detectedLanguage: parsed.detectedLanguage,
+      transcript: parsed.transcript || safeInterimHint || "",
+      transcriptEnglish: parsed.transcriptEnglish || parsed.transcript || safeInterimHint || "",
+      detectedLanguage: parsed.detectedLanguage || (expectedLanguage === "or" ? "Odia (ଓଡ଼ିଆ)" : undefined),
       detectedVitals: parsed.detectedVitals || {}
     };
   } catch (err) {
     console.warn("⚠️ Gemini Audio Transcription error:", (err as Error).message);
-    if (interimTextHint) {
+    if (safeInterimHint) {
       // Fallback translate the interim text hint
-      return translateClinicalTextWithAI(interimTextHint, expectedLanguage).then(res => ({
-        transcript: interimTextHint,
+      return translateClinicalTextWithAI(safeInterimHint, expectedLanguage).then(res => ({
+        transcript: safeInterimHint,
         transcriptEnglish: res.translatedEnglish,
         detectedLanguage: res.detectedLanguage,
         detectedVitals: res.detectedVitals
       }));
     }
     return {
-      transcript: "",
-      transcriptEnglish: "",
+      transcript: "ଅଡିଓ ସ୍ପଷ୍ଟ ଶୁଣାଗଲା ନାହିଁ, ଦୟାକରି ପୁଣି କୁହନ୍ତୁ (Audio unclear, please repeat)",
+      transcriptEnglish: "Audio unclear or not detected, please speak again.",
+      detectedLanguage: expectedLanguage === "or" ? "Odia (ଓଡ଼ିଆ)" : undefined
     };
   }
 }
@@ -447,7 +550,7 @@ Return strictly JSON:
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const model = gemini.getGenerativeModel({
-        model: "gemini-3.8-flash",
+        model: "gemini-3.5-flash",
         generationConfig: {
           responseMimeType: "application/json",
           temperature: 0.1,

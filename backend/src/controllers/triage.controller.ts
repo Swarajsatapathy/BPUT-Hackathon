@@ -57,7 +57,7 @@ export const parseDocumentOCR = async (req: Request, res: Response): Promise<voi
 
 export const transcribeAudio = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { audioBase64, mimeType, language = "en", interimTextHint } = req.body;
+    const { audioBase64, mimeType, language = "en", interimTextHint, isLiveStream } = req.body;
     if (!audioBase64 && !interimTextHint) {
       res.status(400).json({ error: "Audio data or text hint is required." });
       return;
@@ -67,7 +67,8 @@ export const transcribeAudio = async (req: Request, res: Response): Promise<void
       audioBase64 || "",
       mimeType || "audio/webm",
       language,
-      interimTextHint
+      interimTextHint,
+      Boolean(isLiveStream)
     );
     res.json({ success: true, ...result });
   } catch (err) {

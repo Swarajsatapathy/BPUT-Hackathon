@@ -49,7 +49,10 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
   const audioRecorderRef = useRef<AudioRecorderHandle | null>(null);
   const recognizerRef = useRef<any>(null);
   const timerIntervalRef = useRef<any>(null);
+  const liveStreamIntervalRef = useRef<any>(null);
+  const isStreamingChunkRef = useRef<boolean>(false);
   const liveTranscriptRef = useRef<string>("");
+  const recordingSessionIdRef = useRef<number>(0);
 
   // Vitals State
   const [bpSystolic, setBpSystolic] = useState<string>("");
@@ -73,11 +76,15 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
   // Clean up recording on unmount
   useEffect(() => {
     return () => {
+      recordingSessionIdRef.current += 1;
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (liveStreamIntervalRef.current) clearInterval(liveStreamIntervalRef.current);
       if (audioRecorderRef.current) audioRecorderRef.current.cancel();
       if (recognizerRef.current) recognizerRef.current.stop();
     };
   }, []);
+
+  const BROWSER_SUPPORTED_SPEECH_LANGS = ["hi", "bn", "te", "ta", "mr", "gu", "kn", "ml", "pa", "en"];
 
   const getActiveSpeechLocale = (langCode: string): string => {
     const found = SUPPORTED_LANGUAGES.find((l) => l.code === langCode);
@@ -90,6 +97,10 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
     setRecordingSeconds(0);
     liveTranscriptRef.current = "";
 
+    recordingSessionIdRef.current += 1;
+    const thisSessionId = recordingSessionIdRef.current;
+
+    const hasBrowserSpeechSupport = BROWSER_SUPPORTED_SPEECH_LANGS.includes(spokenLangCode);
     const localeToUse = getActiveSpeechLocale(spokenLangCode);
 
     try {
@@ -97,18 +108,53 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
       const recorder = await startAudioRecording();
       audioRecorderRef.current = recorder;
 
-      // 2. Start Web Speech recognition for instant live interim feedback
-      const rec = createSpeechRecognizer(
-        localeToUse,
-        (transcript) => {
-          liveTranscriptRef.current = transcript;
-          setVoiceTranscript(transcript);
-        },
-        () => {},
-        (err) => console.warn("Live speech interim warning:", err)
-      );
-      recognizerRef.current = rec;
-      rec.start();
+      // 2. Start Live Speech recognition
+      if (hasBrowserSpeechSupport) {
+        const rec = createSpeechRecognizer(
+          localeToUse,
+          (transcript) => {
+            liveTranscriptRef.current = transcript;
+            setVoiceTranscript(transcript);
+          },
+          () => {},
+          (err) => console.warn("Live speech interim warning:", err)
+        );
+        recognizerRef.current = rec;
+        rec.start();
+      } else {
+        // Ultra-fast Real-Time Streaming STT for Odia & Regional Languages
+        // Periodically streams audio snapshots so words appear live on screen as spoken
+        liveStreamIntervalRef.current = setInterval(async () => {
+          if (isStreamingChunkRef.current || !audioRecorderRef.current || recordingSessionIdRef.current !== thisSessionId) return;
+          isStreamingChunkRef.current = true;
+          try {
+            const snapshot = await audioRecorderRef.current.getSnapshotBase64();
+            if (recordingSessionIdRef.current !== thisSessionId) return;
+            if (snapshot && snapshot.base64 && snapshot.base64.length > 500) {
+              const res = await transcribeAudioApi(
+                snapshot.base64,
+                snapshot.mimeType,
+                spokenLangCode,
+                "",
+                true /* isLiveStream */
+              );
+              if (recordingSessionIdRef.current === thisSessionId && res.success && res.transcript) {
+                setVoiceTranscript(res.transcript);
+                if (res.transcriptEnglish) {
+                  setVoiceTranslation(res.transcriptEnglish);
+                }
+                if (res.detectedLanguage) {
+                  setDetectedVoiceLang(res.detectedLanguage);
+                }
+              }
+            }
+          } catch (e) {
+            // interim frame skipped
+          } finally {
+            isStreamingChunkRef.current = false;
+          }
+        }, 2200);
+      }
 
       // 3. Start timer
       timerIntervalRef.current = setInterval(() => {
@@ -118,19 +164,22 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
       setIsRecording(true);
     } catch (err: any) {
       console.warn("Audio recording initialization error:", err);
-      // Fallback to browser Web Speech API directly
-      const rec = createSpeechRecognizer(
-        localeToUse,
-        (transcript) => {
-          liveTranscriptRef.current = transcript;
-          setVoiceTranscript(transcript);
-        },
-        () => setIsRecording(false),
-        (err) => setErrorMessage("Microphone permission denied or not supported.")
-      );
-      recognizerRef.current = rec;
-      rec.start();
-      setIsRecording(true);
+      if (hasBrowserSpeechSupport) {
+        const rec = createSpeechRecognizer(
+          localeToUse,
+          (transcript) => {
+            liveTranscriptRef.current = transcript;
+            setVoiceTranscript(transcript);
+          },
+          () => setIsRecording(false),
+          (err) => setErrorMessage("Microphone permission denied or not supported.")
+        );
+        recognizerRef.current = rec;
+        rec.start();
+        setIsRecording(true);
+      } else {
+        setErrorMessage("Microphone access is required for voice input.");
+      }
     }
   };
 
@@ -168,26 +217,34 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
   };
 
   const stopRecordingFlow = async () => {
+    recordingSessionIdRef.current += 1; // Invalidate any in-flight live streaming tasks
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
 
+    if (liveStreamIntervalRef.current) {
+      clearInterval(liveStreamIntervalRef.current);
+      liveStreamIntervalRef.current = null;
+    }
+
     if (recognizerRef.current) {
       recognizerRef.current.stop();
+      recognizerRef.current = null;
     }
 
     setIsRecording(false);
     setIsTranscribing(true);
 
-    const capturedInterim = liveTranscriptRef.current || voiceTranscript;
+    const hasBrowserSpeechSupport = BROWSER_SUPPORTED_SPEECH_LANGS.includes(spokenLangCode);
+    const capturedInterim = hasBrowserSpeechSupport ? (liveTranscriptRef.current || voiceTranscript) : "";
 
     try {
       if (audioRecorderRef.current) {
         const { base64, mimeType } = await audioRecorderRef.current.stop();
         audioRecorderRef.current = null;
 
-        // Send to Gemini 1.5 Flash for high-accuracy medical audio transcription & translation
+        // Send to Gemini for high-accuracy medical audio transcription & translation
         const result = await transcribeAudioApi(base64, mimeType, spokenLangCode, capturedInterim);
 
         if (result.success) {
@@ -570,19 +627,25 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
           )}
 
           {/* DUAL-BOX DISPLAY: Original Spoken Voice + AI Clinical English Translation */}
-          {(voiceTranscript || voiceTranslation) && (
+          {(isRecording || voiceTranscript || voiceTranslation) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 animate-fadeIn">
               
               {/* Box 1: Original Spoken Voice */}
               <div className="bg-brand-50/70 border border-brand-200 rounded-xl p-3.5 flex flex-col justify-between space-y-2.5 shadow-2xs">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-1.5 text-brand-900 font-bold text-xs">
+                    <div className="flex items-center gap-1.5 text-brand-900 font-bold text-xs flex-wrap">
                       <Mic className="w-3.5 h-3.5 text-brand-700" />
                       <span>Original Spoken Voice</span>
                       <span className="text-[10px] bg-brand-200/70 text-brand-900 font-semibold px-1.5 py-0.5 rounded">
                         {detectedVoiceLang || SUPPORTED_LANGUAGES.find((l) => l.code === spokenLangCode)?.nativeName || "Speech"}
                       </span>
+                      {isRecording && (
+                        <span className="flex items-center gap-1 text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded animate-pulse border border-rose-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" />
+                          LIVE STT
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -598,7 +661,21 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
                     </button>
                   </div>
                   <p className="text-xs text-slate-800 font-medium leading-relaxed bg-white p-2.5 rounded-lg border border-brand-200/70 min-h-[52px]">
-                    {voiceTranscript || <span className="text-slate-400 italic">No speech captured yet...</span>}
+                    {voiceTranscript || (
+                      <span className="text-slate-400 italic flex items-center gap-2">
+                        {isRecording ? (
+                          <>
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+                            </span>
+                            <span>Listening... Words will appear live here as you speak</span>
+                          </>
+                        ) : (
+                          "No speech captured yet..."
+                        )}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -622,6 +699,11 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
                     <div className="flex items-center gap-1.5 text-emerald-950 font-bold text-xs">
                       <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
                       <span>AI Clinical English Translation</span>
+                      {isRecording && voiceTranslation && (
+                        <span className="text-[10px] bg-emerald-200 text-emerald-950 font-bold px-1.5 py-0.5 rounded animate-pulse">
+                          LIVE
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button

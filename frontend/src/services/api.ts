@@ -119,9 +119,10 @@ export const transcribeAudioApi = async (
   audioBase64: string, 
   mimeType: string = "audio/webm", 
   language: string = "en",
-  interimTextHint?: string
+  interimTextHint?: string,
+  isLiveStream?: boolean
 ) => {
-  const res = await api.post("/triage/transcribe-audio", { audioBase64, mimeType, language, interimTextHint });
+  const res = await api.post("/triage/transcribe-audio", { audioBase64, mimeType, language, interimTextHint, isLiveStream });
   return res.data;
 };
 

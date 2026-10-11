@@ -82,6 +82,7 @@ export function createSpeechRecognizer(
 export interface AudioRecorderHandle {
   stop: () => Promise<{ base64: string; mimeType: string; blob: Blob }>;
   cancel: () => void;
+  getSnapshotBase64: () => Promise<{ base64: string; mimeType: string } | null>;
 }
 
 export async function startAudioRecording(): Promise<AudioRecorderHandle> {
@@ -118,6 +119,36 @@ export async function startAudioRecording(): Promise<AudioRecorderHandle> {
   mediaRecorder.start(250); // Collect in 250ms chunks
 
   return {
+    getSnapshotBase64: () => {
+      return new Promise((resolve) => {
+        try {
+          if (mediaRecorder.state !== "recording") {
+            return resolve(null);
+          }
+          mediaRecorder.requestData();
+
+          // Wait a tick (60ms) for the browser to trigger ondataavailable
+          setTimeout(() => {
+            try {
+              if (audioChunks.length === 0) return resolve(null);
+              const audioBlob = new Blob(audioChunks, { type: mimeType });
+              if (audioBlob.size < 500) return resolve(null);
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64 = reader.result as string;
+                resolve({ base64, mimeType });
+              };
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(audioBlob);
+            } catch {
+              resolve(null);
+            }
+          }, 60);
+        } catch {
+          resolve(null);
+        }
+      });
+    },
     stop: () => {
       return new Promise((resolve, reject) => {
         mediaRecorder.onstop = () => {

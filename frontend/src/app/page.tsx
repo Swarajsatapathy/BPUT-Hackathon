@@ -105,7 +105,7 @@ export default function Home() {
                 onClick={() => setPortalMode("OVERVIEW")}
                 className="text-xs font-semibold text-slate-600 hover:text-teal-700 transition-colors"
               >
-                ← Back to Overview
+                ← Back to Home
               </button>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function Home() {
                 onClick={() => setPortalMode("OVERVIEW")}
                 className="text-xs font-semibold text-slate-600 hover:text-teal-700 transition-colors"
               >
-                ← Back to Overview
+                ← Back to Home
               </button>
             </div>
           </div>

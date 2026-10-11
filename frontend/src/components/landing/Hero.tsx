@@ -19,17 +19,15 @@ export const Hero: React.FC<{
         <div className="flex flex-col gap-6">
           <p className="inline-flex w-fit items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50/80 px-3 py-1 text-xs font-semibold text-teal-800">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" aria-hidden="true" />
-            For PHCs, CHCs, district hospitals, campus and industrial health units
+            {t("heroFacilityBadge")}
           </p>
 
           <h1 className="text-balance text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.15] tracking-tight text-slate-900">
-            Faster, safer triage notes — reviewed by a human, every time.
+            {t("heroHeadline")}
           </h1>
 
           <p className="max-w-xl text-pretty text-base sm:text-lg leading-relaxed text-slate-600">
-            Swasthya Sakhi turns spoken symptoms, typed notes, lab reports and photos into a structured triage note in the
-            patient&apos;s language — so health workers, nurses and medical officers can review crowded queues with
-            confidence.
+            {t("heroDescription")}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -37,7 +35,7 @@ export const Hero: React.FC<{
               onClick={onStartIntake}
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-teal-700 hover:bg-teal-800 px-5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow cursor-pointer"
             >
-              Start patient intake
+              {t("btnStartIntake")}
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
             <button
@@ -45,21 +43,21 @@ export const Hero: React.FC<{
               className="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-5 text-sm font-semibold text-slate-700 shadow-2xs transition-colors cursor-pointer"
             >
               <LayoutDashboard className="w-4 h-4 text-teal-700" aria-hidden="true" />
-              Open reviewer dashboard
+              {t("btnOpenReviewer")}
             </button>
           </div>
 
           <dl className="mt-2 grid max-w-lg grid-cols-3 gap-4 border-t border-slate-200 pt-6">
             <div>
-              <dt className="text-xs text-slate-500 font-medium">Languages</dt>
+              <dt className="text-xs text-slate-500 font-medium">{t("statLanguages")}</dt>
               <dd className="font-mono text-2xl font-bold text-slate-900">12+</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500 font-medium">Input modes</dt>
+              <dt className="text-xs text-slate-500 font-medium">{t("statInputModes")}</dt>
               <dd className="font-mono text-2xl font-bold text-slate-900">4</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500 font-medium">Auto-decisions</dt>
+              <dt className="text-xs text-slate-500 font-medium">{t("statAutoDecisions")}</dt>
               <dd className="font-mono text-2xl font-bold text-teal-700">0</dd>
             </div>
           </dl>
