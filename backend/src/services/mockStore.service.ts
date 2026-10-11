@@ -39,7 +39,9 @@ export const store = {
     if (isDbConnected()) {
       try {
         const created = await PatientModel.create(patient);
-        return created.toObject() as Patient;
+        const obj = created.toObject() as Patient;
+        memoryPatients.push(obj);
+        return obj;
       } catch (err) {
         console.warn("DB createPatient error, writing to memory:", err);
       }
@@ -53,7 +55,9 @@ export const store = {
     if (isDbConnected()) {
       try {
         const created = await CaseModel.create(caseRecord);
-        return created.toObject() as CaseRecord;
+        const obj = created.toObject() as CaseRecord;
+        memoryCases.unshift(obj);
+        return obj;
       } catch (err) {
         console.warn("DB createCase error, writing to memory:", err);
       }
@@ -79,7 +83,18 @@ export const store = {
         }
 
         const results = await CaseModel.find(query).sort({ createdAt: -1 }).lean();
-        return results as unknown as CaseRecord[];
+        const urgencyWeight: Record<string, number> = {
+          EMERGENCY_RED: 3,
+          URGENT_YELLOW: 2,
+          ROUTINE_GREEN: 1,
+        };
+        const dbCases = results as unknown as CaseRecord[];
+        return dbCases.sort((a, b) => {
+          const wA = urgencyWeight[a.triageOutput?.urgencyLevel] || 0;
+          const wB = urgencyWeight[b.triageOutput?.urgencyLevel] || 0;
+          if (wA !== wB) return wB - wA;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
       } catch (err) {
         console.warn("DB getCases error, fallback to memory:", err);
       }
@@ -142,6 +157,7 @@ export const store = {
   },
 
   async updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord | null> {
+    let result: CaseRecord | null = null;
     if (isDbConnected()) {
       try {
         const updated = await CaseModel.findByIdAndUpdate(
@@ -149,16 +165,18 @@ export const store = {
           { $set: updates },
           { new: true }
         ).lean();
-        return updated as unknown as CaseRecord | null;
+        if (updated) result = updated as unknown as CaseRecord;
       } catch (err) {
         console.warn("DB updateCase error, fallback to memory:", err);
       }
     }
 
     const idx = memoryCases.findIndex(c => c._id === caseId);
-    if (idx === -1) return null;
-    memoryCases[idx] = { ...memoryCases[idx], ...updates, updatedAt: new Date() };
-    return memoryCases[idx];
+    if (idx !== -1) {
+      memoryCases[idx] = { ...memoryCases[idx], ...updates, updatedAt: new Date() };
+      if (!result) result = memoryCases[idx];
+    }
+    return result;
   },
 
   // Staff Operations

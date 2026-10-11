@@ -26,7 +26,7 @@ export async function processTriageWithAI(input: TriageInputPayload): Promise<{
   const { maskedText } = maskPII(combinedInput);
 
   // 1. Run deterministic safety rule check
-  const ruleResult = evaluateDeterministicSafetyRules(maskedText, input.vitals, input.patientDemographics);
+  const ruleResult = evaluateDeterministicSafetyRules(maskedText, input.vitals, input.patientDemographics, input.attachments);
 
   const gemini = getGeminiClient();
 
@@ -37,7 +37,7 @@ export async function processTriageWithAI(input: TriageInputPayload): Promise<{
 
   try {
     const model = gemini.getGenerativeModel({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.8-flash",
       generationConfig: {
         responseMimeType: "application/json",
         temperature: 0.1, // Low temperature for factual medical triage
@@ -82,8 +82,20 @@ SAFETY CONSTRAINTS:
 2. DO NOT prescribe specific drug doses or state definitive medical diagnoses. Keep outputs advisory for the reviewing clinician.
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    let text = "";
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const result = await model.generateContent(prompt);
+        text = result.response.text();
+        break;
+      } catch (err: any) {
+        if (attempt === 1 && (err.message?.includes("503") || err.message?.includes("high demand") || err.message?.includes("429"))) {
+          await new Promise((r) => setTimeout(r, 1200));
+          continue;
+        }
+        throw err;
+      }
+    }
     const parsed = JSON.parse(text);
 
     // Ensure deterministic rules take priority (Arbitrator logic)
@@ -260,7 +272,7 @@ export async function parseDocumentOCRWithAI(imageBase64: string, mimeType: stri
 
   try {
     const model = gemini.getGenerativeModel({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.8-flash",
       generationConfig: { responseMimeType: "application/json" }
     });
 
@@ -281,17 +293,30 @@ Return strictly JSON:
 }
 `;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: imageBase64.replace(/^data:[^;]+;base64,/, ""),
-          mimeType: mimeType
+    let ocrTextResponse = "";
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const result = await model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              data: imageBase64.replace(/^data:[^;]+;base64,/, ""),
+              mimeType: mimeType
+            }
+          }
+        ]);
+        ocrTextResponse = result.response.text();
+        break;
+      } catch (err: any) {
+        if (attempt === 1 && (err.message?.includes("503") || err.message?.includes("high demand") || err.message?.includes("429"))) {
+          await new Promise((r) => setTimeout(r, 1200));
+          continue;
         }
+        throw err;
       }
-    ]);
+    }
 
-    return JSON.parse(result.response.text());
+    return JSON.parse(ocrTextResponse);
   } catch (err) {
     console.warn("⚠️ Gemini Document OCR error:", (err as Error).message);
     return {
@@ -550,7 +575,7 @@ Return strictly JSON:
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const model = gemini.getGenerativeModel({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.8-flash",
         generationConfig: {
           responseMimeType: "application/json",
           temperature: 0.1,

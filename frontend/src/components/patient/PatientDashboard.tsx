@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getPatientProfile } from "../../services/api";
@@ -39,13 +39,28 @@ export const PatientDashboard: React.FC = () => {
   const [selectedPrescriptionCase, setSelectedPrescriptionCase] = useState<CaseRecord | null>(null);
   const [selectedReferralCase, setSelectedReferralCase] = useState<CaseRecord | null>(null);
 
+  const selectedCaseRef = useRef<CaseRecord | null>(null);
+  selectedCaseRef.current = selectedCase;
+
   const fetchCases = async () => {
     if (!currentPatient) return;
     try {
-      setLoading(true);
       const res = await getPatientProfile({ id: currentPatient._id });
-      if (res.success) {
-        setCases(res.cases || []);
+      if (res.success && res.cases) {
+        setCases(res.cases);
+        // If viewing confirmation slip, update selectedCase when doctor completes/refers it
+        if (selectedCaseRef.current) {
+          const fresh = res.cases.find((c: CaseRecord) => c._id === selectedCaseRef.current?._id);
+          if (
+            fresh &&
+            (fresh.status !== selectedCaseRef.current.status ||
+              Boolean(fresh.doctorReview) !== Boolean(selectedCaseRef.current.doctorReview) ||
+              fresh.doctorReview?.signedAt !== selectedCaseRef.current.doctorReview?.signedAt ||
+              fresh.updatedAt !== selectedCaseRef.current.updatedAt)
+          ) {
+            setSelectedCase(fresh);
+          }
+        }
       }
     } catch (err) {
       console.warn("Failed to load patient cases", err);
@@ -61,14 +76,25 @@ export const PatientDashboard: React.FC = () => {
       fetchCases();
     };
 
+    const interval = setInterval(fetchCases, 3500);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "triage_last_reviewed_case" || e.key === "triage_case_created_trigger") {
+        fetchCases();
+      }
+    };
+
     window.addEventListener("triage_case_created", handleDataUpdate);
     window.addEventListener("case_reviewed", handleDataUpdate);
     window.addEventListener("focus", handleDataUpdate);
+    window.addEventListener("storage", handleStorage);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener("triage_case_created", handleDataUpdate);
       window.removeEventListener("case_reviewed", handleDataUpdate);
       window.removeEventListener("focus", handleDataUpdate);
+      window.removeEventListener("storage", handleStorage);
     };
   }, [currentPatient]);
 

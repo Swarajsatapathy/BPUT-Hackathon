@@ -113,6 +113,7 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
       if (res.success && res.case) {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("case_reviewed", { detail: res.case }));
+          localStorage.setItem("triage_last_reviewed_case", JSON.stringify({ id: res.case._id, timestamp: Date.now() }));
         }
         onCaseUpdated(res.case);
         if (status === "REFERRED") {
@@ -228,26 +229,26 @@ export const CaseReviewDrawer: React.FC<CaseReviewDrawerProps> = ({
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">BP</span>
                 <span className="font-semibold text-slate-800">
-                  {caseData.vitals.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals.bpDiastolic || ""}` : "—"}
+                  {caseData.vitals?.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals?.bpDiastolic || ""}` : "—"}
                 </span>
               </div>
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">Pulse</span>
-                <span className="font-semibold text-slate-800">{caseData.vitals.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "—"}</span>
+                <span className="font-semibold text-slate-800">{caseData.vitals?.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "—"}</span>
               </div>
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">SpO2</span>
-                <span className={`font-semibold ${caseData.vitals.spo2 && caseData.vitals.spo2 < 92 ? "text-red-700 font-bold" : "text-slate-800"}`}>
-                  {caseData.vitals.spo2 ? `${caseData.vitals.spo2}%` : "—"}
+                <span className={`font-semibold ${caseData.vitals?.spo2 && caseData.vitals.spo2 < 92 ? "text-red-700 font-bold" : "text-slate-800"}`}>
+                  {caseData.vitals?.spo2 ? `${caseData.vitals.spo2}%` : "—"}
                 </span>
               </div>
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">Temp</span>
-                <span className="font-semibold text-slate-800">{caseData.vitals.temperature ? `${caseData.vitals.temperature}°F` : "—"}</span>
+                <span className="font-semibold text-slate-800">{caseData.vitals?.temperature ? `${caseData.vitals.temperature}°F` : "—"}</span>
               </div>
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">Sugar</span>
-                <span className="font-semibold text-slate-800">{caseData.vitals.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "—"}</span>
+                <span className="font-semibold text-slate-800">{caseData.vitals?.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "—"}</span>
               </div>
               <div className="p-1.5 rounded bg-slate-50 border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">Severity</span>

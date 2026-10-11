@@ -95,20 +95,30 @@ export const StaffDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 8000);
+    const interval = setInterval(loadData, 5000);
 
     const handleNewCase = () => {
       loadData();
     };
 
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "triage_case_created_trigger" || e.key === "triage_last_reviewed_case") {
+        loadData();
+      }
+    };
+
     window.addEventListener("triage_case_created", handleNewCase);
+    window.addEventListener("case_reviewed", handleNewCase);
     window.addEventListener("focus", handleNewCase);
+    window.addEventListener("storage", handleStorage);
     document.addEventListener("visibilitychange", handleNewCase);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener("triage_case_created", handleNewCase);
+      window.removeEventListener("case_reviewed", handleNewCase);
       window.removeEventListener("focus", handleNewCase);
+      window.removeEventListener("storage", handleStorage);
       document.removeEventListener("visibilitychange", handleNewCase);
     };
   }, [selectedFacility, selectedUrgency, selectedStatus]);
@@ -185,11 +195,11 @@ export const StaffDashboard: React.FC = () => {
       c.triageOutput.urgencyScore,
       `"${c.status}"`,
       `"${c.facilityType}"`,
-      `"${c.vitals.bpSystolic ? `${c.vitals.bpSystolic}/${c.vitals.bpDiastolic || ''}` : ''}"`,
-      c.vitals.pulseRate || "",
-      c.vitals.spo2 || "",
-      c.vitals.temperature || "",
-      c.vitals.bloodSugar || "",
+      `"${c.vitals?.bpSystolic ? `${c.vitals.bpSystolic}/${c.vitals.bpDiastolic || ''}` : ''}"`,
+      c.vitals?.pulseRate || "",
+      c.vitals?.spo2 || "",
+      c.vitals?.temperature || "",
+      c.vitals?.bloodSugar || "",
       `"${(c.translatedEnglishInput || c.rawSymptomInput).replace(/"/g, '""')}"`,
       `"${new Date(c.createdAt).toLocaleString()}"`
     ]);
@@ -418,22 +428,22 @@ export const StaffDashboard: React.FC = () => {
 
                     {/* Vitals Badges */}
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 pt-0.5">
-                      {c.vitals.bpSystolic && (
+                      {c.vitals?.bpSystolic && (
                         <span className={`px-2 py-0.5 rounded-md font-mono ${c.vitals.bpSystolic >= 180 ? "bg-rose-100 text-rose-900 font-bold border border-rose-200" : "bg-slate-100 text-slate-700 border border-slate-200"}`}>
-                          BP: {c.vitals.bpSystolic}/{c.vitals.bpDiastolic || ""}
+                          BP: {c.vitals.bpSystolic}/{c.vitals?.bpDiastolic || ""}
                         </span>
                       )}
-                      {c.vitals.spo2 && (
+                      {c.vitals?.spo2 && (
                         <span className={`px-2 py-0.5 rounded-md font-mono ${c.vitals.spo2 < 92 ? "bg-rose-100 text-rose-900 font-bold border border-rose-200" : "bg-slate-100 text-slate-700 border border-slate-200"}`}>
                           SpO2: {c.vitals.spo2}%
                         </span>
                       )}
-                      {c.vitals.pulseRate && (
+                      {c.vitals?.pulseRate && (
                         <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-mono border border-slate-200">
                           Pulse: {c.vitals.pulseRate}
                         </span>
                       )}
-                      {c.vitals.temperature && (
+                      {c.vitals?.temperature && (
                         <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-mono border border-slate-200">
                           {c.vitals.temperature}°F
                         </span>

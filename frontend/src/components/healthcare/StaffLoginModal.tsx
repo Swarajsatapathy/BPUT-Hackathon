@@ -58,7 +58,7 @@ export const StaffLoginModal: React.FC<StaffLoginModalProps> = ({ isOpen, onClos
       const res = await staffLoginApi(selectedStaffId.trim(), pin.trim());
       if (res.success && res.staff) {
         setCurrentStaff(res.staff);
-        setSelectedFacility(res.staff.facilityType);
+        setSelectedFacility("ALL");
         setPortalMode("STAFF");
         if (onClose) onClose();
         if (onSuccess) onSuccess();

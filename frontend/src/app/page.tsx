@@ -76,7 +76,7 @@ export default function Home() {
 
       {/* OVERVIEW LANDING PAGE */}
       {portalMode === "OVERVIEW" && (
-        <main className="flex-1">
+        <main className="flex-1 home-times-theme">
           <Hero
             onStartIntake={() => setPortalMode("PATIENT")}
             onOpenDashboard={handleOpenReviewer}

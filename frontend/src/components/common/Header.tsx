@@ -59,7 +59,7 @@ export const Header: React.FC = () => {
         <nav aria-label="Main" className="hidden items-center gap-1.5 md:flex">
           <button
             onClick={() => setPortalMode("OVERVIEW")}
-            className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`font-times rounded-lg px-3.5 py-2 text-sm font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
               portalMode === "OVERVIEW"
                 ? "bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs"
                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -163,7 +163,7 @@ export const Header: React.FC = () => {
       <nav aria-label="Main mobile" className="flex gap-1 overflow-x-auto border-t border-slate-200 px-4 py-2 md:hidden bg-slate-50">
         <button
           onClick={() => setPortalMode("OVERVIEW")}
-          className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-1 ${
+          className={`font-times shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-1 ${
             portalMode === "OVERVIEW" ? "bg-teal-700 text-white" : "text-slate-600"
           }`}
         >

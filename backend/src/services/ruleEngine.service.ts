@@ -10,7 +10,8 @@ export interface RuleEvaluationResult {
 export function evaluateDeterministicSafetyRules(
   symptomText: string,
   vitals?: Vitals,
-  patientDemographics?: { age?: number; sex?: string; isPregnant?: boolean }
+  patientDemographics?: { age?: number; sex?: string; isPregnant?: boolean },
+  attachments?: any[]
 ): RuleEvaluationResult {
   const redFlags: string[] = [];
   const warnings: string[] = [];
@@ -133,7 +134,85 @@ export function evaluateDeterministicSafetyRules(
     highestUrgency = "EMERGENCY_RED";
   }
 
-  // 3. Missing Clinical Vitals Checks
+  // 3. Laboratory / Diagnostic Report Red Flags (CBC, Platelets, Hemoglobin, Dengue)
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    for (const att of attachments) {
+      const ocrText = (att.ocrExtractedText || "").toLowerCase();
+      const fileName = (att.fileName || "").toLowerCase();
+      const parsed = att.parsedValues || {};
+
+      // A. Platelet Count Evaluation
+      let plateletVal: number | null = null;
+      if (typeof parsed.plateletCount === "number") {
+        plateletVal = parsed.plateletCount;
+      } else if (typeof parsed.platelets === "number") {
+        plateletVal = parsed.platelets;
+      } else if (typeof parsed.platelets === "string") {
+        const match = parsed.platelets.replace(/,/g, "").match(/\d+/);
+        if (match) plateletVal = parseInt(match[0], 10);
+      }
+
+      // Check OCR text regex if not parsed numerically
+      if (plateletVal === null) {
+        const platMatch = ocrText.replace(/,/g, "").match(/platelet(?:s|\s+count)?[:\s]+(\d+)/i);
+        if (platMatch) {
+          plateletVal = parseInt(platMatch[1], 10);
+        }
+      }
+
+      if (plateletVal !== null) {
+        if (plateletVal < 20000) {
+          redFlags.push(`CRITICAL THROMBOCYTOPENIA: Platelet count ${plateletVal.toLocaleString()} /µL (< 20,000 /µL). Severe spontaneous hemorrhage risk. Immediate transfusion/doctor review.`);
+          highestUrgency = "EMERGENCY_RED";
+        } else if (plateletVal < 100000) {
+          warnings.push(`SIGNIFICANT THROMBOCYTOPENIA: Platelet count ${plateletVal.toLocaleString()} /µL (< 100,000 /µL). Suspected Dengue / hemorrhagic warning sign.`);
+          if (highestUrgency !== "EMERGENCY_RED") {
+            highestUrgency = "URGENT_YELLOW";
+          }
+        }
+      }
+
+      // B. Hemoglobin Evaluation
+      let hbVal: number | null = null;
+      if (typeof parsed.hemoglobin === "number") hbVal = parsed.hemoglobin;
+      else if (typeof parsed.hemoglobin === "string") {
+        const m = parsed.hemoglobin.match(/(\d+(?:\.\d+)?)/);
+        if (m) hbVal = parseFloat(m[1]);
+      }
+      if (hbVal === null) {
+        const hbMatch = ocrText.match(/(?:hemoglobin|hb)[:\s]+(\d+(?:\.\d+)?)/i);
+        if (hbMatch) hbVal = parseFloat(hbMatch[1]);
+      }
+
+      if (hbVal !== null) {
+        if (hbVal < 7.0) {
+          redFlags.push(`CRITICAL ANEMIA: Hemoglobin ${hbVal} g/dL (< 7.0 g/dL). High risk of tissue hypoxia / cardiac failure.`);
+          highestUrgency = "EMERGENCY_RED";
+        } else if (hbVal < 9.0) {
+          warnings.push(`Moderate/Severe Anemia: Hemoglobin ${hbVal} g/dL (< 9.0 g/dL).`);
+          if (highestUrgency !== "EMERGENCY_RED") {
+            highestUrgency = "URGENT_YELLOW";
+          }
+        }
+      }
+
+      // C. Keyword Heuristics in Lab Report
+      const dengueLabKeywords = ["thrombocytopenia", "dengue hemorrhagic", "severe thrombocytopenia", "hemoconcentration", "platelet count low", "low platelets", "cbc report"];
+      if (dengueLabKeywords.some(kw => ocrText.includes(kw) || fileName.includes(kw))) {
+        if (ocrText.includes("severe") || ocrText.includes("hemorrhagic") || ocrText.includes("critical")) {
+          warnings.push("CBC / Diagnostic Report reveals critical hematological anomaly requiring priority physician review.");
+          if (highestUrgency !== "EMERGENCY_RED") {
+            highestUrgency = "URGENT_YELLOW";
+          }
+        } else if (highestUrgency !== "EMERGENCY_RED") {
+          warnings.push("Uploaded CBC / Lab Investigation requires prompt clinical evaluation.");
+          highestUrgency = "URGENT_YELLOW";
+        }
+      }
+    }
+  }
+
+  // 4. Missing Clinical Vitals Checks
   if (!vitals || vitals.bpSystolic === undefined) {
     missingVitals.push("Blood Pressure (BP) has not been recorded.");
   }

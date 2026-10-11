@@ -178,26 +178,26 @@ export const PrescriptionDocumentModal: React.FC<PrescriptionDocumentModalProps>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">BP</span>
                 <span className="font-bold text-slate-900">
-                  {caseData.vitals.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals.bpDiastolic || ""}` : "—"}
+                  {caseData.vitals?.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals?.bpDiastolic || ""}` : "—"}
                 </span>
               </div>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">Pulse</span>
-                <span className="font-bold text-slate-900">{caseData.vitals.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "—"}</span>
+                <span className="font-bold text-slate-900">{caseData.vitals?.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "—"}</span>
               </div>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">SpO2</span>
-                <span className={`font-bold ${caseData.vitals.spo2 && caseData.vitals.spo2 < 92 ? "text-rose-700" : "text-slate-900"}`}>
-                  {caseData.vitals.spo2 ? `${caseData.vitals.spo2}%` : "—"}
+                <span className={`font-bold ${caseData.vitals?.spo2 && caseData.vitals.spo2 < 92 ? "text-rose-700" : "text-slate-900"}`}>
+                  {caseData.vitals?.spo2 ? `${caseData.vitals.spo2}%` : "—"}
                 </span>
               </div>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">Temp</span>
-                <span className="font-bold text-slate-900">{caseData.vitals.temperature ? `${caseData.vitals.temperature}°F` : "—"}</span>
+                <span className="font-bold text-slate-900">{caseData.vitals?.temperature ? `${caseData.vitals.temperature}°F` : "—"}</span>
               </div>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">Blood Sugar</span>
-                <span className="font-bold text-slate-900">{caseData.vitals.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "—"}</span>
+                <span className="font-bold text-slate-900">{caseData.vitals?.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "—"}</span>
               </div>
               <div className="bg-slate-50 p-1.5 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-400 block">Severity Score</span>

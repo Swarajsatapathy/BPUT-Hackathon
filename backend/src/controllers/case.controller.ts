@@ -19,8 +19,9 @@ export const createCase = async (req: Request, res: Response): Promise<void> => 
       attachments = [],
     } = req.body;
 
-    if (!patientId || (!rawSymptomInput && !voiceTranscript)) {
-      res.status(400).json({ error: "patientId and symptom details are required." });
+    const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
+    if (!patientId || (!rawSymptomInput && !voiceTranscript && !hasAttachments)) {
+      res.status(400).json({ error: "patientId and clinical details or document attachment are required." });
       return;
     }
 
@@ -30,9 +31,16 @@ export const createCase = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    // Determine effective symptom narrative if only document was attached
+    let effectiveSymptom = (rawSymptomInput || voiceTranscript || "").trim();
+    if (!effectiveSymptom && hasAttachments) {
+      const firstAtt = attachments[0];
+      effectiveSymptom = firstAtt.ocrExtractedText || `Attached Medical Document: ${firstAtt.fileName || "Investigation Report"}`;
+    }
+
     // Process Triage Output via Gemini + Safety Rule Engine
     const { triageOutput, translatedEnglish } = await processTriageWithAI({
-      rawSymptoms: rawSymptomInput || "",
+      rawSymptoms: effectiveSymptom,
       voiceTranscript,
       inputLanguage,
       vitals,
@@ -55,12 +63,12 @@ export const createCase = async (req: Request, res: Response): Promise<void> => 
       facilityType,
       status: "PENDING_REVIEW",
       inputLanguage,
-      rawSymptomInput: rawSymptomInput || voiceTranscript || "",
+      rawSymptomInput: effectiveSymptom,
       voiceTranscript,
       symptomDuration: symptomDuration || triageOutput.timelineSummary,
       followUpResponses: followUpResponses || [],
-      translatedEnglishInput: translatedEnglish,
-      vitals,
+      translatedEnglishInput: translatedEnglish || effectiveSymptom,
+      vitals: vitals || {},
       attachments,
       triageOutput,
       auditTrail: [

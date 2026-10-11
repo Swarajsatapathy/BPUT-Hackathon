@@ -533,37 +533,37 @@ export const PatientHealthTimeline: React.FC<PatientHealthTimelineProps> = ({
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">BP</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.bpSystolic && entry.vitals.bpDiastolic ? `${entry.vitals.bpSystolic}/${entry.vitals.bpDiastolic}` : "--"}
+                                  {entry.vitals?.bpSystolic && entry.vitals?.bpDiastolic ? `${entry.vitals.bpSystolic}/${entry.vitals.bpDiastolic}` : "--"}
                                 </span>
                               </div>
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">Pulse</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.pulseRate ? `${entry.vitals.pulseRate} bpm` : "--"}
+                                  {entry.vitals?.pulseRate ? `${entry.vitals.pulseRate} bpm` : "--"}
                                 </span>
                               </div>
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">SpO2</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.spo2 ? `${entry.vitals.spo2}%` : "--"}
+                                  {entry.vitals?.spo2 ? `${entry.vitals.spo2}%` : "--"}
                                 </span>
                               </div>
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">Temp</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.temperature ? `${entry.vitals.temperature}°F` : "--"}
+                                  {entry.vitals?.temperature ? `${entry.vitals.temperature}°F` : "--"}
                                 </span>
                               </div>
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">Blood Sugar</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.bloodSugar ? `${entry.vitals.bloodSugar} mg/dL` : "--"}
+                                  {entry.vitals?.bloodSugar ? `${entry.vitals.bloodSugar} mg/dL` : "--"}
                                 </span>
                               </div>
                               <div className="bg-slate-950 p-1.5 rounded border border-slate-800">
                                 <span className="text-[10px] text-slate-400 block">Resp. Rate</span>
                                 <span className="font-mono font-bold text-white">
-                                  {entry.vitals.respiratoryRate ? `${entry.vitals.respiratoryRate}/min` : "--"}
+                                  {entry.vitals?.respiratoryRate ? `${entry.vitals.respiratoryRate}/min` : "--"}
                                 </span>
                               </div>
                             </div>

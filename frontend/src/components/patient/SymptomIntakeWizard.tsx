@@ -446,6 +446,7 @@ export const SymptomIntakeWizard: React.FC<SymptomIntakeWizardProps> = ({ onCase
       if (res.success && res.case) {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("triage_case_created", { detail: res.case }));
+          localStorage.setItem("triage_case_created_trigger", Date.now().toString());
         }
         onCaseCreated(res.case);
       }

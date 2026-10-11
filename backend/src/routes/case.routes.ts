@@ -4,9 +4,11 @@ import { createCase, getCaseById, getCasesQueue, getCaseTimeline, reviewCase } f
 const router = Router();
 
 router.post("/", createCase);
+router.get("/", getCasesQueue);
 router.get("/queue", getCasesQueue);
 router.get("/:id", getCaseById);
 router.get("/:id/timeline", getCaseTimeline);
 router.patch("/:id/review", reviewCase);
+router.post("/:id/review", reviewCase);
 
 export default router;

@@ -196,32 +196,32 @@ export const ReferralSlipModal: React.FC<ReferralSlipModalProps> = ({
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-center">
                 <div className="p-1 rounded">
                   <span className="text-slate-500 block text-[10px] font-semibold">BP (mmHg)</span>
-                  <span className={`font-bold text-xs ${caseData.vitals.bpSystolic && caseData.vitals.bpSystolic >= 160 ? "text-rose-700 font-black" : "text-slate-900"}`}>
-                    {caseData.vitals.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals.bpDiastolic || ""}` : "N/A"}
+                  <span className={`font-bold text-xs ${caseData.vitals?.bpSystolic && caseData.vitals.bpSystolic >= 160 ? "text-rose-700 font-black" : "text-slate-900"}`}>
+                    {caseData.vitals?.bpSystolic ? `${caseData.vitals.bpSystolic}/${caseData.vitals?.bpDiastolic || ""}` : "N/A"}
                   </span>
                 </div>
                 <div className="p-1 rounded">
                   <span className="text-slate-500 block text-[10px] font-semibold">Pulse</span>
                   <span className="font-bold text-xs text-slate-900">
-                    {caseData.vitals.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "N/A"}
+                    {caseData.vitals?.pulseRate ? `${caseData.vitals.pulseRate} bpm` : "N/A"}
                   </span>
                 </div>
                 <div className="p-1 rounded">
                   <span className="text-slate-500 block text-[10px] font-semibold">SpO2</span>
-                  <span className={`font-bold text-xs ${caseData.vitals.spo2 && caseData.vitals.spo2 < 92 ? "text-rose-700 font-black" : "text-slate-900"}`}>
-                    {caseData.vitals.spo2 ? `${caseData.vitals.spo2}%` : "N/A"}
+                  <span className={`font-bold text-xs ${caseData.vitals?.spo2 && caseData.vitals.spo2 < 92 ? "text-rose-700 font-black" : "text-slate-900"}`}>
+                    {caseData.vitals?.spo2 ? `${caseData.vitals.spo2}%` : "N/A"}
                   </span>
                 </div>
                 <div className="p-1 rounded">
                   <span className="text-slate-500 block text-[10px] font-semibold">Temp</span>
                   <span className="font-bold text-xs text-slate-900">
-                    {caseData.vitals.temperature ? `${caseData.vitals.temperature}°F` : "N/A"}
+                    {caseData.vitals?.temperature ? `${caseData.vitals.temperature}°F` : "N/A"}
                   </span>
                 </div>
                 <div className="p-1 rounded">
                   <span className="text-slate-500 block text-[10px] font-semibold">Sugar</span>
                   <span className="font-bold text-xs text-slate-900">
-                    {caseData.vitals.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "N/A"}
+                    {caseData.vitals?.bloodSugar ? `${caseData.vitals.bloodSugar} mg/dL` : "N/A"}
                   </span>
                 </div>
                 <div className="p-1 rounded">

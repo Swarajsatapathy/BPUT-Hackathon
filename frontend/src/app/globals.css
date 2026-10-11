@@ -16,13 +16,14 @@ body {
     radial-gradient(at 85% 90%, rgba(56, 154, 216, 0.08) 0px, transparent 45%),
     radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.6) 0px, transparent 100%);
   background-attachment: fixed;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Times New Roman", Times, Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Polished clinical form controls */
-input, select, textarea {
+input, select, textarea, button {
+  font-family: "Times New Roman", Times, Georgia, serif;
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -91,6 +92,14 @@ input:focus, select:focus, textarea:focus {
 .card-elevation:hover {
   border-color: rgba(92, 180, 238, 0.45);
   box-shadow: 0 8px 24px -4px rgba(92, 180, 238, 0.14), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* Times New Roman font styling for Home page & navigation */
+.font-times,
+.font-times *,
+.home-times-theme,
+.home-times-theme * {
+  font-family: "Times New Roman", Times, Georgia, serif !important;
 }
 
 @media print {

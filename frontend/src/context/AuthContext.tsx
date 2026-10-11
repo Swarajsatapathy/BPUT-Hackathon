@@ -74,9 +74,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentPatient(patient);
     if (patient) {
       localStorage.setItem("triage_patient_session", JSON.stringify(patient));
-      // Security: Clear any staff session when patient logs in
-      setCurrentStaff(null);
-      localStorage.removeItem("triage_staff_session");
       setPortalMode("PATIENT");
     } else {
       localStorage.removeItem("triage_patient_session");

@@ -400,7 +400,7 @@ export async function summarizeTimelineChangesWithAI(
 
   try {
     const model = gemini.getGenerativeModel({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.8-flash",
       generationConfig: {
         responseMimeType: "application/json",
         temperature: 0.1, // Zero hallucination / strict factual adherence
